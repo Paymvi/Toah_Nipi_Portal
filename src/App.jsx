@@ -383,20 +383,33 @@ function ChecklistTab({
   onMarkReady,
 }) {
   return (
-    <div className="portal-content-grid">
-      <section className="dashboard-card portal-panel">
-        <div className="portal-panel-header">
-          <div>
-            <p className="dashboard-eyebrow">Checklist</p>
-            <h2>Required next steps</h2>
-            <span>
-              Complete each item below. Status and last changed dates are shown
-              for both the guest and staff side.
-            </span>
-          </div>
+    <section className="dashboard-card notion-checklist-panel">
+      <div className="notion-checklist-header">
+        <div>
+          <p className="dashboard-eyebrow">Checklist</p>
+          <h2>Booking checklist</h2>
+          <span>
+            A clear overview of what is complete, what needs attention, and what
+            staff is reviewing.
+          </span>
         </div>
 
-        <div className="checklist-list">
+        <div className="notion-checklist-summary">
+          <span>{portalRecord.retreatDates}</span>
+          <strong>{portalRecord.guestCount}</strong>
+        </div>
+      </div>
+
+      <div className="notion-table-wrap">
+        <div className="notion-table-header">
+          <span>Task</span>
+          <span>Status</span>
+          <span>Due Date</span>
+          <span>File</span>
+          <span>Action</span>
+        </div>
+
+        <div className="notion-table-body">
           {checklistItems.map((item) => (
             <ChecklistItemCard
               key={item.id}
@@ -406,26 +419,8 @@ function ChecklistTab({
             />
           ))}
         </div>
-      </section>
-
-      <aside className="dashboard-card portal-side-card">
-        <div className="portal-panel-header compact">
-          <div>
-            <p className="dashboard-eyebrow">Booking Snapshot</p>
-            <h2>Group details</h2>
-          </div>
-        </div>
-
-        <div className="portal-side-list">
-          <SideFact label="Group" value={portalRecord.groupName} />
-          <SideFact label="Primary Contact" value={portalRecord.contactName} />
-          <SideFact label="Email" value={portalRecord.contactEmail} />
-          <SideFact label="Dates" value={portalRecord.retreatDates} />
-          <SideFact label="Guests" value={portalRecord.guestCount} />
-          <SideFact label="Last Updated" value={portalRecord.lastUpdated} />
-        </div>
-      </aside>
-    </div>
+      </div>
+    </section>
   );
 }
 
@@ -436,62 +431,122 @@ function ChecklistItemCard({ item, onUpload, onMarkReady }) {
   const isLocked =
     item.status === "completed" || item.status === "needsReview";
 
+  const isStaffOnly = item.id === "deposit";
+  const isGuestCount = item.id === "guest-count";
+
+  function getShortStatusLabel() {
+    if (item.status === "completed") {
+      return "Complete";
+    }
+
+    if (item.status === "needsReview") {
+      return "In Review";
+    }
+
+    if (item.status === "waitingOnGuest") {
+      return "Needs You";
+    }
+
+    return "Not Started";
+  }
+
+  function getActionLabel() {
+    if (item.status === "completed") {
+      return "Received";
+    }
+
+    if (item.status === "needsReview") {
+      return "Submitted";
+    }
+
+    if (isStaffOnly) {
+      return "Staff Updates";
+    }
+
+    if (isGuestCount) {
+      return "Submit";
+    }
+
+    if (item.id === "contract") {
+      return "Upload Signed File";
+    }
+
+    return "Upload File";
+  }
+
+  function handleGuestCountSubmit() {
+    onMarkReady(item);
+  }
+
   return (
-    <article className={`checklist-card ${statusInfo.className}`}>
-      <div className="checklist-card-main">
-        <div className="checklist-card-status-icon">
-          {item.status === "completed" ? "✓" : item.status === "needsReview" ? "…" : "!"}
+    <article className="notion-table-row">
+      <div className="notion-task-cell">
+        <div className={`notion-task-icon ${statusInfo.className}`}>
+          {item.status === "completed"
+            ? "✓"
+            : item.status === "needsReview"
+              ? "…"
+              : ""}
         </div>
 
-        <div className="checklist-card-content">
-          <div className="checklist-card-title-row">
-            <div>
-              <h3>{item.title}</h3>
-              <p>{item.description}</p>
-            </div>
+        <div className="notion-task-copy">
+          <h3>{item.title}</h3>
+          <p>{item.description}</p>
 
-            <span className={`status-pill ${statusInfo.className}`}>
-              {statusInfo.label}
-            </span>
-          </div>
-
-          <div className="checklist-meta-grid">
-            <MetaItem label="Due Date" value={item.dueDate} />
-            <MetaItem label="Last Changed" value={item.lastChanged} />
-            <MetaItem
-              label="Required"
-              value={item.required ? "Required" : "Optional"}
-            />
-            <MetaItem
-              label="File"
-              value={item.uploadedFileName || "No upload yet"}
-            />
-          </div>
-
-          <p className="checklist-helper">{item.helperText}</p>
-
-          <div className="checklist-actions">
-            <input
-              id={inputId}
-              className="hidden-file-input"
-              type="file"
-              onChange={(event) => onUpload(item, event.target.files?.[0])}
-            />
-
-            <label className="secondary-dashboard-button" htmlFor={inputId}>
-              Upload File
-            </label>
-
-            <button
-              className="primary-dashboard-button"
-              type="button"
-              disabled={isLocked}
-              onClick={() => onMarkReady(item)}
-            >
-              Mark Ready for Staff Review
-            </button>
+          <div className="notion-mobile-meta">
+            <span>{getShortStatusLabel()}</span>
+            <span>Due {item.dueDate}</span>
+            <span>{item.required ? "Required" : "Optional"}</span>
           </div>
         </div>
+      </div>
+
+      <div className="notion-status-cell">
+        <span className={`status-pill ${statusInfo.className}`}>
+          {getShortStatusLabel()}
+        </span>
+      </div>
+
+      <div className="notion-date-cell">
+        <span>{item.dueDate}</span>
+        <small>{item.required ? "Required" : "Optional"}</small>
+      </div>
+
+      <div className="notion-file-cell">
+        <span className={item.uploadedFileName ? "has-file" : ""}>
+          {item.uploadedFileName || "No upload yet"}
+        </span>
+      </div>
+
+      <div className="notion-action-cell">
+        <input
+          id={inputId}
+          className="hidden-file-input"
+          type="file"
+          disabled={isLocked || isStaffOnly || isGuestCount}
+          onChange={(event) => onUpload(item, event.target.files?.[0])}
+        />
+
+        {isGuestCount && !isLocked ? (
+          <button
+            className="secondary-dashboard-button notion-action-button"
+            type="button"
+            onClick={handleGuestCountSubmit}
+          >
+            {getActionLabel()}
+          </button>
+        ) : (
+          <label
+            className={
+              isLocked || isStaffOnly
+                ? "secondary-dashboard-button notion-action-button disabled"
+                : "primary-dashboard-button notion-action-button"
+            }
+            htmlFor={isLocked || isStaffOnly ? undefined : inputId}
+          >
+            {getActionLabel()}
+          </label>
+        )}
       </div>
     </article>
   );
