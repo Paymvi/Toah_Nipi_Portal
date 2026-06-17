@@ -1,113 +1,118 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import "./App.css";
 
-const PORTAL_RECORDS = {
-  "oak-hill-youth": {
-    id: "booking-001",
-    portalToken: "oak-hill-youth",
-    groupName: "Oak Hill Youth Retreat",
-    contactName: "Jamie Carter",
-    contactEmail: "jamie@example.com",
-    staffEmail: "office@toahnipi.org",
-    retreatDates: "March 14–16, 2026",
-    guestCount: "42 guests",
-    status: "Preparing for contract",
-    lastUpdated: "Feb 4, 2026",
-    checklistItems: [
-      {
-        id: "contract",
-        title: "Review and sign rental contract",
-        description:
-          "Please review the rental agreement and return the signed copy.",
-        status: "waitingOnGuest",
-        required: true,
-        lastChanged: "Feb 4, 2026",
-        dueDate: "Feb 18, 2026",
-        helperText: "Download the contract from Documents, then upload the signed version here.",
-      },
-      {
-        id: "insurance",
-        title: "Submit certificate of insurance",
-        description:
-          "Upload proof of insurance for your group before arrival.",
-        status: "notStarted",
-        required: true,
-        lastChanged: "Not changed yet",
-        dueDate: "Feb 28, 2026",
-        helperText: "PDF, PNG, or JPG is fine for this draft.",
-      },
-      {
-        id: "deposit",
-        title: "Deposit confirmation",
-        description:
-          "Staff will update this once the deposit has been received.",
-        status: "needsReview",
-        required: true,
-        lastChanged: "Feb 6, 2026",
-        dueDate: "Feb 20, 2026",
-        helperText: "This is currently waiting for staff review.",
-      },
-      {
-        id: "guest-count",
-        title: "Confirm final guest count",
-        description:
-          "Send the final number of guests so Toah Nipi can prepare rooms and meals.",
-        status: "notStarted",
-        required: true,
-        lastChanged: "Not changed yet",
-        dueDate: "Mar 1, 2026",
-        helperText: "This could later become an editable form field.",
-      },
-      {
-        id: "schedule",
-        title: "Share retreat schedule",
-        description:
-          "Upload your draft schedule so staff can coordinate meals, spaces, and activities.",
-        status: "completed",
-        required: false,
-        lastChanged: "Feb 2, 2026",
-        dueDate: "Mar 1, 2026",
-        helperText: "Schedule has been received.",
-      },
-    ],
-    documents: [
-      {
-        id: "doc-contract-template",
-        itemId: "contract",
-        title: "Rental Contract Template",
-        type: "Staff Document",
-        fileName: "Oak-Hill-Rental-Contract.pdf",
-        status: "ready",
-        lastChanged: "Feb 4, 2026",
-        note: "Download, sign, and upload the completed version.",
-      },
-      {
-        id: "doc-insurance-guide",
-        itemId: "insurance",
-        title: "Insurance Requirements",
-        type: "Information Sheet",
-        fileName: "Insurance-Requirements.pdf",
-        status: "ready",
-        lastChanged: "Jan 28, 2026",
-        note: "Explains what needs to be listed on the certificate.",
-      },
-      {
-        id: "doc-schedule",
-        itemId: "schedule",
-        title: "Retreat Schedule",
-        type: "Guest Upload",
-        fileName: "Youth-Retreat-Schedule.pdf",
-        status: "completed",
-        lastChanged: "Feb 2, 2026",
-        note: "Uploaded by group leader.",
-      },
-    ],
-  },
-};
+import {
+  fetchPortalRecord,
+  markPortalItemReady,
+} from "./services/portalService";
+
+// const PORTAL_RECORDS = {
+//   "oak-hill-youth": {
+//     id: "booking-001",
+//     portalToken: "oak-hill-youth",
+//     groupName: "Oak Hill Youth Retreat",
+//     contactName: "Jamie Carter",
+//     contactEmail: "jamie@example.com",
+//     staffEmail: "office@toahnipi.org",
+//     retreatDates: "March 14–16, 2026",
+//     guestCount: "42 guests",
+//     status: "Preparing for contract",
+//     lastUpdated: "Feb 4, 2026",
+//     checklistItems: [
+//       {
+//         id: "contract",
+//         title: "Review and sign rental contract",
+//         description:
+//           "Please review the rental agreement and return the signed copy.",
+//         status: "waitingOnGuest",
+//         required: true,
+//         lastChanged: "Feb 4, 2026",
+//         dueDate: "Feb 18, 2026",
+//         helperText: "Download the contract from Documents, then upload the signed version here.",
+//       },
+//       {
+//         id: "insurance",
+//         title: "Submit certificate of insurance",
+//         description:
+//           "Upload proof of insurance for your group before arrival.",
+//         status: "notStarted",
+//         required: true,
+//         lastChanged: "Not changed yet",
+//         dueDate: "Feb 28, 2026",
+//         helperText: "PDF, PNG, or JPG is fine for this draft.",
+//       },
+//       {
+//         id: "deposit",
+//         title: "Deposit confirmation",
+//         description:
+//           "Staff will update this once the deposit has been received.",
+//         status: "needsReview",
+//         required: true,
+//         lastChanged: "Feb 6, 2026",
+//         dueDate: "Feb 20, 2026",
+//         helperText: "This is currently waiting for staff review.",
+//       },
+//       {
+//         id: "guest-count",
+//         title: "Confirm final guest count",
+//         description:
+//           "Send the final number of guests so Toah Nipi can prepare rooms and meals.",
+//         status: "notStarted",
+//         required: true,
+//         lastChanged: "Not changed yet",
+//         dueDate: "Mar 1, 2026",
+//         helperText: "This could later become an editable form field.",
+//       },
+//       {
+//         id: "schedule",
+//         title: "Share retreat schedule",
+//         description:
+//           "Upload your draft schedule so staff can coordinate meals, spaces, and activities.",
+//         status: "completed",
+//         required: false,
+//         lastChanged: "Feb 2, 2026",
+//         dueDate: "Mar 1, 2026",
+//         helperText: "Schedule has been received.",
+//       },
+//     ],
+//     documents: [
+//       {
+//         id: "doc-contract-template",
+//         itemId: "contract",
+//         title: "Rental Contract Template",
+//         type: "Staff Document",
+//         fileName: "Oak-Hill-Rental-Contract.pdf",
+//         status: "ready",
+//         lastChanged: "Feb 4, 2026",
+//         note: "Download, sign, and upload the completed version.",
+//       },
+//       {
+//         id: "doc-insurance-guide",
+//         itemId: "insurance",
+//         title: "Insurance Requirements",
+//         type: "Information Sheet",
+//         fileName: "Insurance-Requirements.pdf",
+//         status: "ready",
+//         lastChanged: "Jan 28, 2026",
+//         note: "Explains what needs to be listed on the certificate.",
+//       },
+//       {
+//         id: "doc-schedule",
+//         itemId: "schedule",
+//         title: "Retreat Schedule",
+//         type: "Guest Upload",
+//         fileName: "Youth-Retreat-Schedule.pdf",
+//         status: "completed",
+//         lastChanged: "Feb 2, 2026",
+//         note: "Uploaded by group leader.",
+//       },
+//     ],
+//   },
+// };
 
 function getPortalTokenFromUrl() {
   const params = new URLSearchParams(window.location.search);
-  return params.get("portal") || "oak-hill-youth";
+  return params.get("portal") || "";
 }
 
 function getTodayLabel() {
@@ -177,75 +182,133 @@ function getChecklistProgress(checklistItems) {
 
 export default function App() {
   const portalToken = getPortalTokenFromUrl();
-  const portalRecord =
-    PORTAL_RECORDS[portalToken] || PORTAL_RECORDS["oak-hill-youth"];
 
   const [activeTab, setActiveTab] = useState("checklist");
-  const [checklistItems, setChecklistItems] = useState(
-    portalRecord.checklistItems
-  );
-  const [documents, setDocuments] = useState(portalRecord.documents);
+  const [portalRecord, setPortalRecord] = useState(null);
+  const [isLoadingPortal, setIsLoadingPortal] = useState(true);
+  const [portalError, setPortalError] = useState("");
+  const [savingItemId, setSavingItemId] = useState("");
+
+  const checklistItems = portalRecord?.checklistItems || [];
+  const documents = portalRecord?.documents || [];
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadPortalRecord() {
+      if (!portalToken) {
+        setPortalError("This portal link is missing a portal token.");
+        setIsLoadingPortal(false);
+        return;
+      }
+
+      try {
+        setIsLoadingPortal(true);
+        setPortalError("");
+
+        const record = await fetchPortalRecord(portalToken);
+
+        if (!isMounted) {
+          return;
+        }
+
+        if (!record) {
+          setPortalRecord(null);
+          setPortalError("This portal link is invalid or has expired.");
+        } else {
+          setPortalRecord(record);
+        }
+      } catch (error) {
+        console.error("Could not load portal record:", error);
+
+        if (isMounted) {
+          setPortalError("Could not load this portal. Please contact Toah Nipi staff.");
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoadingPortal(false);
+        }
+      }
+    }
+
+    loadPortalRecord();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [portalToken]);
 
   const progress = useMemo(
     () => getChecklistProgress(checklistItems),
     [checklistItems]
   );
 
-  function handleUpload(item, file) {
-    if (!file) {
-      return;
+    function handleUpload(item, file) {
+      if (!file) {
+        return;
+      }
+
+      alert(
+        "File uploads are not connected yet. Next step: connect Supabase Storage for portal documents."
+      );
     }
 
-    const changedDate = getTodayLabel();
+    async function handleMarkReady(item) {
+    try {
+      setSavingItemId(item.id);
 
-    setChecklistItems((currentItems) =>
-      currentItems.map((currentItem) =>
-        currentItem.id === item.id
-          ? {
-              ...currentItem,
-              status: "needsReview",
-              lastChanged: changedDate,
-              uploadedFileName: file.name,
-            }
-          : currentItem
-      )
-    );
+      const updatedRecord = await markPortalItemReady(portalToken, item.id);
 
-    setDocuments((currentDocuments) => {
-      const uploadedDocument = {
-        id: `upload-${item.id}`,
-        itemId: item.id,
-        title: `${item.title} Upload`,
-        type: "Guest Upload",
-        fileName: file.name,
-        status: "needsReview",
-        lastChanged: changedDate,
-        note: "Uploaded in this draft portal. Later this will save to the server.",
-        uploadedByGuest: true,
-      };
+      if (!updatedRecord) {
+        alert("Could not update this item. Please contact Toah Nipi staff.");
+        return;
+      }
 
-      return [
-        uploadedDocument,
-        ...currentDocuments.filter(
-          (document) => document.id !== uploadedDocument.id
-        ),
-      ];
-    });
+      setPortalRecord(updatedRecord);
+    } catch (error) {
+      console.error("Could not update portal checklist item:", error);
+      alert("Could not update this item. Please try again or contact staff.");
+    } finally {
+      setSavingItemId("");
+    }
   }
 
-  function handleMarkReady(item) {
-    const changedDate = getTodayLabel();
+  if (isLoadingPortal) {
+    return (
+      <main className="portal-shell">
+        <section className="portal-main">
+          <section className="portal-header-card">
+            <p className="dashboard-eyebrow">Guest Portal</p>
+            <h1>Loading portal...</h1>
+            <p className="portal-subtitle">
+              Please wait while we load your booking checklist.
+            </p>
+          </section>
+        </section>
+      </main>
+    );
+  }
 
-    setChecklistItems((currentItems) =>
-      currentItems.map((currentItem) =>
-        currentItem.id === item.id
-          ? {
-              ...currentItem,
-              status: "needsReview",
-              lastChanged: changedDate,
-            }
-          : currentItem
-      )
+  if (portalError || !portalRecord) {
+    return (
+      <main className="portal-shell">
+        <section className="portal-main">
+          <section className="portal-header-card">
+            <p className="dashboard-eyebrow">Guest Portal</p>
+            <h1>Portal unavailable</h1>
+            <p className="portal-subtitle">
+              {portalError || "This portal link could not be loaded."}
+            </p>
+
+            <a
+              className="secondary-dashboard-button portal-contact-button"
+              href="mailto:office@toahnipi.org"
+            >
+              Contact Staff
+            </a>
+          </section>
+        </section>
+      </main>
     );
   }
 
@@ -268,6 +331,7 @@ export default function App() {
             checklistItems={checklistItems}
             onUpload={handleUpload}
             onMarkReady={handleMarkReady}
+            savingItemId={savingItemId}
           />
         ) : (
           <DocumentsTab documents={documents} />
@@ -381,6 +445,7 @@ function ChecklistTab({
   checklistItems,
   onUpload,
   onMarkReady,
+  savingItemId,
 }) {
   return (
     <section className="dashboard-card notion-checklist-panel">
@@ -416,6 +481,7 @@ function ChecklistTab({
               item={item}
               onUpload={onUpload}
               onMarkReady={onMarkReady}
+              isSaving={savingItemId === item.id}
             />
           ))}
         </div>
@@ -424,15 +490,16 @@ function ChecklistTab({
   );
 }
 
-function ChecklistItemCard({ item, onUpload, onMarkReady }) {
+function ChecklistItemCard({ item, onUpload, onMarkReady, isSaving }) {
   const statusInfo = getStatusInfo(item.status);
   const inputId = `upload-${item.id}`;
 
   const isLocked =
     item.status === "completed" || item.status === "needsReview";
 
-  const isStaffOnly = item.id === "deposit";
-  const isGuestCount = item.id === "guest-count";
+  const isStaffOnly = item.guestAction === "none";
+  const isGuestCount = item.guestAction === "mark_ready";
+  const isUploadItem = item.guestAction === "upload_file";
 
   function getShortStatusLabel() {
     if (item.status === "completed") {
@@ -467,11 +534,11 @@ function ChecklistItemCard({ item, onUpload, onMarkReady }) {
       return "Submit";
     }
 
-    if (item.id === "contract") {
-      return "Upload Signed File";
+    if (isUploadItem) {
+      return item.id === "contract" ? "Upload Signed File" : "Upload File";
     }
 
-    return "Upload File";
+    return "No Action";
   }
 
   function handleGuestCountSubmit() {
@@ -523,7 +590,7 @@ function ChecklistItemCard({ item, onUpload, onMarkReady }) {
           id={inputId}
           className="hidden-file-input"
           type="file"
-          disabled={isLocked || isStaffOnly || isGuestCount}
+          disabled={isLocked || !isUploadItem}
           onChange={(event) => onUpload(item, event.target.files?.[0])}
         />
 
@@ -531,18 +598,19 @@ function ChecklistItemCard({ item, onUpload, onMarkReady }) {
           <button
             className="secondary-dashboard-button notion-action-button"
             type="button"
+            disabled={isSaving}
             onClick={handleGuestCountSubmit}
           >
-            {getActionLabel()}
+            {isSaving ? "Submitting..." : getActionLabel()}
           </button>
         ) : (
           <label
             className={
-              isLocked || isStaffOnly
+              isLocked || !isUploadItem
                 ? "secondary-dashboard-button notion-action-button disabled"
                 : "primary-dashboard-button notion-action-button"
             }
-            htmlFor={isLocked || isStaffOnly ? undefined : inputId}
+            htmlFor={isLocked || !isUploadItem ? undefined : inputId}
           >
             {getActionLabel()}
           </label>
