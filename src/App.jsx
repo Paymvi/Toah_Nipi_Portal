@@ -348,6 +348,17 @@ function PortalHeader({
   setActiveTab,
   documentCount,
 }) {
+  const isProgressComplete =
+    progress.total > 0 && progress.completed === progress.total;
+
+  const progressMarker = isProgressComplete
+    ? "98%"
+    : `${Math.min(Math.max(progress.percent, 4), 96)}%`;
+
+  const progressGnomeSrc = isProgressComplete
+    ? "/gnome_celebration.png"
+    : "/gnome_run.png";
+
   return (
     <header className="portal-header-card">
       <div className="portal-header-top">
@@ -384,14 +395,29 @@ function PortalHeader({
             {progress.completed} complete · {progress.needsReview} awaiting
             review · {progress.open} open
           </span>
+
           <strong>{progress.percent}%</strong>
         </div>
 
-        <div className="portal-progress-track">
-          <div
-            className="portal-progress-fill"
-            style={{ width: `${progress.percent}%` }}
+        <div
+          className={`portal-progress-track-wrap ${
+            isProgressComplete ? "portal-progress-complete" : ""
+          }`}
+          style={{ "--portal-progress-marker": progressMarker }}
+        >
+          <img
+            className="portal-progress-gnome-img"
+            src={progressGnomeSrc}
+            alt=""
+            aria-hidden="true"
           />
+
+          <div className="portal-progress-track">
+            <div
+              className="portal-progress-fill"
+              style={{ width: `${progress.percent}%` }}
+            />
+          </div>
         </div>
       </div>
 
