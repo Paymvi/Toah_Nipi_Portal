@@ -6,6 +6,8 @@ import {
   markPortalItemReady,
 } from "./services/portalService";
 
+
+
 // const PORTAL_RECORDS = {
 //   "oak-hill-youth": {
 //     id: "booking-001",
@@ -348,12 +350,19 @@ function PortalHeader({
   setActiveTab,
   documentCount,
 }) {
+  const FORCE_GNOME_TEST_COMPLETE = false;
+
+  const displayProgressPercent = FORCE_GNOME_TEST_COMPLETE
+    ? 100
+    : progress.percent;
+
   const isProgressComplete =
-    progress.total > 0 && progress.completed === progress.total;
+    FORCE_GNOME_TEST_COMPLETE ||
+    (progress.total > 0 && progress.completed === progress.total);
 
   const progressMarker = isProgressComplete
     ? "98%"
-    : `${Math.min(Math.max(progress.percent, 4), 96)}%`;
+    : `${Math.min(Math.max(displayProgressPercent, 4), 96)}%`;
 
   const progressGnomeSrc = isProgressComplete
     ? "/gnome_celebration.png"
@@ -415,7 +424,7 @@ function PortalHeader({
           <div className="portal-progress-track">
             <div
               className="portal-progress-fill"
-              style={{ width: `${progress.percent}%` }}
+              style={{ width: `${displayProgressPercent}%` }}
             />
           </div>
         </div>
