@@ -1,38 +1,28 @@
 @import url("https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;500;600;700&display=swap");
-
 * {
   box-sizing: border-box;
 }
 
 :root {
   --font-heading: "Atkinson Hyperlegible Next", Inter, system-ui, sans-serif;
-
   --page-bg: #f5f6fb;
   --card-bg: #ffffff;
-
   --text-main: #1d2030;
   --text-soft: #697088;
   --text-muted: #858ba0;
-
   --border: #dfe3ed;
   --border-soft: #edf0f5;
-
   --purple: #4937ad;
   --purple-hover: #3d2e96;
   --purple-soft: #f3f0ff;
-
   --green: #16835f;
   --green-soft: #e8f7f0;
-
   --blue: #4f5eb5;
   --blue-soft: #eef0ff;
-
   --gold: #9b6813;
   --gold-soft: #fff4df;
-
   --red: #9f2f2f;
   --red-soft: #fff1f1;
-
   font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
     sans-serif;
   color: var(--text-main);
@@ -70,7 +60,6 @@ a {
 /* =========================================================
    Shared pieces
 ========================================================= */
-
 .dashboard-card {
   overflow: hidden;
   background: var(--card-bg);
@@ -95,18 +84,15 @@ a {
 .secondary-dashboard-button {
   min-height: 30px;
   padding: 0 11px;
-
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
-
   border-radius: 8px;
   font: inherit;
   font-size: 0.74rem;
   font-weight: 600;
   white-space: nowrap;
-
   cursor: pointer;
   transition:
     transform 140ms ease,
@@ -144,7 +130,6 @@ a {
    Intentionally compact: roughly the visual density of
    viewing the old layout around 70–75% browser zoom.
 ========================================================= */
-
 .portal-shell {
   min-height: 100vh;
   background:
@@ -159,19 +144,15 @@ a {
   padding: 22px 0 30px;
 }
 
-
 /* =========================================================
    Portal header
 ========================================================= */
-
 .portal-header-card {
   display: grid;
   gap: 15px;
-
   margin-bottom: 14px;
   padding: 18px 20px 0;
   overflow: hidden;
-
   border: 1px solid rgba(215, 219, 232, 0.96);
   border-radius: 14px;
   background: rgba(255, 255, 255, 0.97);
@@ -202,17 +183,14 @@ a {
   width: 49px;
   height: 49px;
   flex: 0 0 49px;
-
   display: grid;
   place-items: center;
-
   border-radius: 12px;
   background: linear-gradient(145deg, #5946c3 0%, #3d2d99 100%);
   color: #ffffff;
   box-shadow:
     0 8px 18px rgba(68, 50, 164, 0.15),
     inset 0 1px 0 rgba(255, 255, 255, 0.22);
-
   font-family: var(--font-heading);
   font-size: 0.98rem;
   font-weight: 700;
@@ -222,7 +200,6 @@ a {
 .portal-header-card h1 {
   max-width: 100%;
   margin: 0;
-
   color: #17192b;
   font-family: var(--font-heading);
   font-size: clamp(1.55rem, 2.4vw, 2.2rem);
@@ -245,7 +222,6 @@ a {
   min-height: 34px;
   padding: 0 14px;
   gap: 7px;
-
   border: 1px solid #4937ad;
   border-radius: 9px;
   background: linear-gradient(135deg, #523fc0, #3f2e9e);
@@ -268,7 +244,6 @@ a {
 /* =========================================================
    Summary cards
 ========================================================= */
-
 .portal-summary-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -279,18 +254,15 @@ a {
   --card-accent: var(--purple);
   --card-icon-bg: #f1edff;
   --card-glow: rgba(91, 67, 196, 0.08);
-
   position: relative;
   min-width: 0;
   min-height: 86px;
   padding: 12px 13px;
   overflow: hidden;
-
   display: grid;
   grid-template-columns: 38px minmax(0, 1fr);
   align-items: center;
   gap: 10px;
-
   border: 1px solid #dce0ed;
   border-left: 3px solid var(--card-accent);
   border-radius: 11px;
@@ -338,12 +310,10 @@ a {
 .portal-summary-icon {
   position: relative;
   z-index: 1;
-
   width: 38px;
   height: 38px;
   display: grid;
   place-items: center;
-
   border-radius: 50%;
   background: var(--card-icon-bg);
   color: var(--card-accent);
@@ -374,7 +344,6 @@ a {
 .portal-summary-card strong {
   display: block;
   margin-top: 4px;
-
   color: #17192b;
   font-family: var(--font-heading);
   font-size: clamp(0.9rem, 1.15vw, 1.05rem);
@@ -387,12 +356,10 @@ a {
 /* =========================================================
    Progress + gnome
 ========================================================= */
-
 .portal-progress-area {
   display: grid;
   gap: 4px;
   padding: 12px 14px 11px;
-
   border: 1px solid #e0e3ee;
   border-radius: 11px;
   background: rgba(255, 255, 255, 0.9);
@@ -480,14 +447,11 @@ a {
   left: var(--portal-progress-marker);
   top: 0;
   z-index: 3;
-
   width: 32px;
   height: 32px;
   object-fit: contain;
-
   transform: translateX(-50%);
   pointer-events: none;
-
   filter:
     drop-shadow(0 3px 5px rgba(28, 35, 52, 0.14))
     drop-shadow(0 0 4px rgba(255, 255, 255, 0.78));
@@ -525,12 +489,10 @@ a {
 /* =========================================================
    Tabs
 ========================================================= */
-
 .portal-tabs {
   display: flex;
   align-items: flex-end;
   gap: 7px;
-
   margin: 0 -20px;
   padding: 0 20px;
   border-bottom: 1px solid #e2e5ef;
@@ -540,20 +502,16 @@ a {
   position: relative;
   min-height: 39px;
   padding: 0 10px;
-
   display: inline-flex;
   align-items: center;
   gap: 6px;
-
   border: 0;
   border-radius: 8px 8px 0 0;
   background: transparent;
   color: #7b8299;
-
   font-family: var(--font-heading);
   font-size: 0.76rem;
   font-weight: 600;
-
   cursor: pointer;
   transition:
     color 140ms ease,
@@ -594,10 +552,8 @@ a {
   min-width: 19px;
   height: 19px;
   padding: 0 5px;
-
   display: inline-grid;
   place-items: center;
-
   border-radius: 999px;
   background: #eceef5;
   color: #737b93;
@@ -614,21 +570,17 @@ a {
 /* =========================================================
    Draft notice
 ========================================================= */
-
 .portal-notice-card {
   margin-bottom: 14px;
   padding: 9px 11px;
-
   display: flex;
   align-items: center;
   gap: 6px;
   flex-wrap: wrap;
-
   border: 1px solid #eadfb8;
   border-radius: 9px;
   background: #fffaf0;
   box-shadow: 0 3px 10px rgba(95, 75, 16, 0.025);
-
   color: #6f530b;
   font-size: 0.72rem;
   line-height: 1.4;
@@ -643,7 +595,6 @@ a {
   border: 1px solid #e8ddb6;
   border-radius: 5px;
   background: #ffffff;
-
   font-family:
     ui-monospace,
     SFMono-Regular,
@@ -657,7 +608,6 @@ a {
 /* =========================================================
    Generic portal panels
 ========================================================= */
-
 .portal-content-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 260px;
@@ -672,12 +622,10 @@ a {
 .portal-panel-header,
 .notion-checklist-header {
   padding: 14px 16px;
-
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 14px;
-
   background: #ffffff;
   border-bottom: 1px solid var(--border-soft);
 }
@@ -758,7 +706,6 @@ a {
 /* =========================================================
    Notion-style checklist
 ========================================================= */
-
 .notion-checklist-panel {
   overflow: hidden;
 }
@@ -766,7 +713,6 @@ a {
 .notion-checklist-summary {
   flex: 0 0 auto;
   padding: 8px 10px;
-
   border: 1px solid var(--border-soft);
   border-radius: 7px;
   background: #fafbfe;
@@ -809,10 +755,8 @@ a {
 .notion-table-header {
   min-width: 830px;
   padding: 8px 16px;
-
   background: #fafbfe;
   border-bottom: 1px solid var(--border-soft);
-
   color: #818998;
   font-family: var(--font-heading);
   font-size: 0.57rem;
@@ -824,7 +768,6 @@ a {
 .notion-table-row {
   min-width: 830px;
   padding: 10px 16px;
-
   background: #ffffff;
   border-bottom: 1px solid var(--border-soft);
   transition: background-color 140ms ease;
@@ -849,15 +792,12 @@ a {
   width: 19px;
   height: 19px;
   flex: 0 0 19px;
-
   display: grid;
   place-items: center;
-
   border: 1px solid #d5dae3;
   border-radius: 5px;
   background: #f5f6f8;
   color: #818998;
-
   font-size: 0.65rem;
   font-weight: 700;
 }
@@ -920,11 +860,9 @@ a {
   flex: 0 0 auto;
   min-height: 20px;
   padding: 0 7px;
-
   display: inline-flex;
   align-items: center;
   justify-content: center;
-
   border-radius: 6px;
   font-size: 0.61rem;
   font-weight: 600;
@@ -1006,7 +944,6 @@ a {
 /* =========================================================
    Documents
 ========================================================= */
-
 .documents-list {
   display: grid;
   gap: 9px;
@@ -1018,9 +955,7 @@ a {
   grid-template-columns: 38px minmax(0, 1fr) auto;
   gap: 10px;
   align-items: start;
-
   padding: 10px;
-
   border: 1px solid var(--border);
   border-radius: 9px;
   background: #ffffff;
@@ -1030,14 +965,11 @@ a {
 .document-file-icon {
   width: 36px;
   height: 36px;
-
   display: grid;
   place-items: center;
-
   border-radius: 7px;
   background: #eef0eb;
   color: #657455;
-
   font-family:
     ui-monospace,
     SFMono-Regular,
@@ -1086,14 +1018,11 @@ a {
 .document-meta-row span {
   min-height: 20px;
   padding: 0 7px;
-
   display: inline-flex;
   align-items: center;
-
   border: 1px solid var(--border-soft);
   border-radius: 999px;
   background: #fbfcfd;
-
   color: #6f7687;
   font-size: 0.61rem;
   font-weight: 500;
@@ -1109,10 +1038,29 @@ a {
   gap: 6px;
 }
 
+.document-card-missing {
+  border-color: #efcaca;
+  background: #fffdfd;
+}
+
+.document-file-missing {
+  min-height: 30px;
+  padding: 0 9px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #efcaca;
+  border-radius: 8px;
+  background: #fff4f4;
+  color: #9f2f2f;
+  font-size: 0.68rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
 /* =========================================================
    Legacy checklist classes kept for compatibility
 ========================================================= */
-
 .checklist-list {
   display: grid;
   gap: 9px;
@@ -1228,7 +1176,6 @@ a {
 /* =========================================================
    Responsive
 ========================================================= */
-
 @media (max-width: 1080px) {
   .portal-main {
     width: min(100% - 32px, 1240px);
