@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;500;600;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;500;600;700&display=swap");
 
 * {
   box-sizing: border-box;
@@ -7,27 +7,28 @@
 :root {
   --font-heading: "Atkinson Hyperlegible Next", Inter, system-ui, sans-serif;
 
-  --page-bg: #f6f7f9;
+  --page-bg: #f5f6fb;
   --card-bg: #ffffff;
-  --text-main: #252936;
-  --text-muted: #858c9b;
-  --text-soft: #6f7687;
 
-  --border: #dfe4ec;
-  --border-soft: #edf0f4;
+  --text-main: #1d2030;
+  --text-soft: #697088;
+  --text-muted: #858ba0;
 
-  --purple: #443a9c;
-  --purple-hover: #382f86;
-  --purple-soft: #f7f5ff;
+  --border: #dfe3ed;
+  --border-soft: #edf0f5;
 
-  --green: #2f6f5f;
-  --green-soft: #edf4ef;
+  --purple: #4937ad;
+  --purple-hover: #3d2e96;
+  --purple-soft: #f3f0ff;
 
-  --gold: #956410;
-  --gold-soft: #fff4dc;
+  --green: #16835f;
+  --green-soft: #e8f7f0;
 
-  --blue: #4c65a9;
-  --blue-soft: #eef3fb;
+  --blue: #4f5eb5;
+  --blue-soft: #eef0ff;
+
+  --gold: #9b6813;
+  --gold-soft: #fff4df;
 
   --red: #9f2f2f;
   --red-soft: #fff1f1;
@@ -38,10 +39,15 @@
   background: var(--page-bg);
 }
 
+html {
+  background: var(--page-bg);
+}
+
 body {
   margin: 0;
   min-width: 320px;
   background: var(--page-bg);
+  color: var(--text-main);
 }
 
 button,
@@ -62,48 +68,52 @@ a {
 }
 
 /* =========================================================
-   Shared Staff-Dashboard-Inspired Pieces
+   Shared pieces
 ========================================================= */
 
 .dashboard-card {
-  background: var(--card-bg);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  box-shadow: 0 6px 18px rgba(28, 35, 52, 0.04);
   overflow: hidden;
+  background: var(--card-bg);
+  border: 1px solid rgba(215, 220, 232, 0.95);
+  border-radius: 12px;
+  box-shadow:
+    0 9px 24px rgba(41, 44, 73, 0.045),
+    0 1px 4px rgba(41, 44, 73, 0.025);
 }
 
 .dashboard-eyebrow {
-  margin: 0 0 6px;
-  color: #7b8290;
+  margin: 0 0 4px;
+  color: #777f9e;
   font-family: var(--font-heading);
-  font-size: 0.72rem;
-  font-weight: 650;
-  letter-spacing: 0.095em;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
   text-transform: uppercase;
 }
 
 .primary-dashboard-button,
 .secondary-dashboard-button {
-  min-height: 38px;
-  border-radius: 8px;
-  padding: 0 14px;
+  min-height: 30px;
+  padding: 0 11px;
 
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 7px;
+  gap: 6px;
 
+  border-radius: 8px;
   font: inherit;
-  font-size: 0.84rem;
+  font-size: 0.74rem;
   font-weight: 600;
   white-space: nowrap;
 
   cursor: pointer;
   transition:
-    background-color 150ms ease,
-    border-color 150ms ease,
-    color 150ms ease;
+    transform 140ms ease,
+    box-shadow 140ms ease,
+    background-color 140ms ease,
+    border-color 140ms ease,
+    color 140ms ease;
 }
 
 .primary-dashboard-button {
@@ -115,141 +125,247 @@ a {
 .primary-dashboard-button:hover:not(:disabled) {
   background: var(--purple-hover);
   border-color: var(--purple-hover);
+  transform: translateY(-1px);
 }
 
 .secondary-dashboard-button {
-  border: 1px solid #c9c4e8;
+  border: 1px solid #cbc6e8;
   background: #ffffff;
   color: var(--purple);
 }
 
 .secondary-dashboard-button:hover:not(:disabled) {
   background: var(--purple-soft);
+  transform: translateY(-1px);
 }
 
 /* =========================================================
-   Portal Layout
+   Page layout
+   Intentionally compact: roughly the visual density of
+   viewing the old layout around 70–75% browser zoom.
 ========================================================= */
 
 .portal-shell {
   min-height: 100vh;
   background:
-    radial-gradient(circle at top left, rgba(68, 58, 156, 0.08), transparent 32rem),
-    var(--page-bg);
+    radial-gradient(circle at 7% 2%, rgba(86, 67, 190, 0.085), transparent 24rem),
+    radial-gradient(circle at 93% 0%, rgba(117, 101, 214, 0.065), transparent 26rem),
+    linear-gradient(180deg, #f8f9fc 0%, #f4f5fa 100%);
 }
 
 .portal-main {
-  width: min(1180px, calc(100% - 32px));
+  width: min(1110px, calc(100% - 90px));
   margin: 0 auto;
-  padding: 32px 0;
+  padding: 22px 0 30px;
 }
+
+
+/* =========================================================
+   Portal header
+========================================================= */
 
 .portal-header-card {
   display: grid;
-  gap: 18px;
+  gap: 15px;
 
-  margin-bottom: 16px;
-  padding: 20px;
+  margin-bottom: 14px;
+  padding: 18px 20px 0;
+  overflow: hidden;
 
-  background: #ffffff;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  box-shadow: 0 8px 22px rgba(28, 35, 52, 0.045);
+  border: 1px solid rgba(215, 219, 232, 0.96);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.97);
+  box-shadow:
+    0 10px 28px rgba(41, 44, 73, 0.055),
+    0 1px 5px rgba(41, 44, 73, 0.025);
 }
 
 .portal-header-top {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 18px;
 }
 
 .portal-brand-row {
   min-width: 0;
-
   display: flex;
-  align-items: flex-start;
-  gap: 14px;
+  align-items: center;
+  gap: 13px;
+}
+
+.portal-brand-copy {
+  min-width: 0;
 }
 
 .portal-logo {
-  width: 48px;
-  height: 48px;
-  flex: 0 0 48px;
+  width: 49px;
+  height: 49px;
+  flex: 0 0 49px;
 
   display: grid;
   place-items: center;
 
-  border-radius: 10px;
-  background: var(--purple);
+  border-radius: 12px;
+  background: linear-gradient(145deg, #5946c3 0%, #3d2d99 100%);
   color: #ffffff;
+  box-shadow:
+    0 8px 18px rgba(68, 50, 164, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
 
   font-family: var(--font-heading);
-  font-size: 1rem;
+  font-size: 0.98rem;
   font-weight: 700;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.035em;
 }
 
 .portal-header-card h1 {
+  max-width: 100%;
   margin: 0;
-  color: var(--text-main);
 
+  color: #17192b;
   font-family: var(--font-heading);
-  font-size: clamp(1.55rem, 3vw, 2.25rem);
+  font-size: clamp(1.55rem, 2.4vw, 2.2rem);
   font-weight: 700;
-  line-height: 1.08;
+  line-height: 1.03;
   letter-spacing: -0.04em;
+  overflow-wrap: anywhere;
 }
 
 .portal-subtitle {
   max-width: 680px;
-  margin: 7px 0 0;
-
+  margin: 5px 0 0;
   color: var(--text-muted);
-  font-size: 0.92rem;
-  line-height: 1.5;
+  font-size: 0.78rem;
+  line-height: 1.45;
 }
 
 .portal-contact-button {
   flex: 0 0 auto;
+  min-height: 34px;
+  padding: 0 14px;
+  gap: 7px;
+
+  border: 1px solid #4937ad;
+  border-radius: 9px;
+  background: linear-gradient(135deg, #523fc0, #3f2e9e);
+  color: #ffffff;
+  box-shadow: 0 6px 14px rgba(67, 49, 164, 0.14);
 }
+
+.portal-contact-button svg {
+  width: 15px;
+  height: 15px;
+}
+
+.portal-contact-button:hover:not(:disabled) {
+  border-color: #382887;
+  background: linear-gradient(135deg, #4937ad, #372687);
+  color: #ffffff;
+  box-shadow: 0 8px 17px rgba(67, 49, 164, 0.18);
+}
+
+/* =========================================================
+   Summary cards
+========================================================= */
 
 .portal-summary-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
+  gap: 10px;
 }
 
 .portal-summary-card {
+  --card-accent: var(--purple);
+  --card-icon-bg: #f1edff;
+  --card-glow: rgba(91, 67, 196, 0.08);
+
+  position: relative;
   min-width: 0;
+  min-height: 86px;
+  padding: 12px 13px;
+  overflow: hidden;
 
-  padding: 13px 14px;
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
 
-  background: #fbfcfd;
-  border: 1px solid var(--border);
-  border-left: 4px solid var(--purple);
-  border-radius: 8px;
+  border: 1px solid #dce0ed;
+  border-left: 3px solid var(--card-accent);
+  border-radius: 11px;
+  background:
+    linear-gradient(135deg, #ffffff 0%, #fefeff 62%, var(--card-glow) 155%);
+  box-shadow: 0 5px 15px rgba(45, 49, 77, 0.035);
 }
 
-.portal-summary-card:nth-child(2) {
-  border-left-color: var(--green);
+.portal-summary-card::after {
+  content: "";
+  position: absolute;
+  width: 104px;
+  height: 104px;
+  right: -43px;
+  bottom: -58px;
+  border-radius: 50%;
+  background: var(--card-glow);
+  pointer-events: none;
 }
 
-.portal-summary-card:nth-child(3) {
-  border-left-color: var(--blue);
+.portal-summary-purple {
+  --card-accent: #4937ad;
+  --card-icon-bg: #f0edff;
+  --card-glow: rgba(84, 63, 187, 0.10);
 }
 
-.portal-summary-card:nth-child(4) {
-  border-left-color: var(--gold);
+.portal-summary-green {
+  --card-accent: #16835f;
+  --card-icon-bg: #e8f8f0;
+  --card-glow: rgba(35, 153, 111, 0.095);
 }
 
-.portal-summary-card span {
+.portal-summary-blue {
+  --card-accent: #505eb5;
+  --card-icon-bg: #efefff;
+  --card-glow: rgba(80, 94, 181, 0.095);
+}
+
+.portal-summary-gold {
+  --card-accent: #a36e16;
+  --card-icon-bg: #fff5e6;
+  --card-glow: rgba(196, 135, 32, 0.095);
+}
+
+.portal-summary-icon {
+  position: relative;
+  z-index: 1;
+
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+
+  border-radius: 50%;
+  background: var(--card-icon-bg);
+  color: var(--card-accent);
+}
+
+.portal-summary-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.portal-summary-copy {
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+}
+
+.portal-summary-label {
   display: block;
-  color: var(--text-soft);
-
+  color: #757d9a;
   font-family: var(--font-heading);
-  font-size: 0.68rem;
-  font-weight: 650;
+  font-size: 0.6rem;
+  font-weight: 700;
   letter-spacing: 0.055em;
   line-height: 1.2;
   text-transform: uppercase;
@@ -257,136 +373,265 @@ a {
 
 .portal-summary-card strong {
   display: block;
-  margin-top: 6px;
+  margin-top: 4px;
 
-  color: var(--text-main);
+  color: #17192b;
   font-family: var(--font-heading);
-  font-size: 1rem;
+  font-size: clamp(0.9rem, 1.15vw, 1.05rem);
   font-weight: 700;
-  line-height: 1.2;
+  line-height: 1.14;
+  letter-spacing: -0.02em;
+  overflow-wrap: anywhere;
 }
+
+/* =========================================================
+   Progress + gnome
+========================================================= */
 
 .portal-progress-area {
   display: grid;
-  gap: 8px;
+  gap: 4px;
+  padding: 12px 14px 11px;
+
+  border: 1px solid #e0e3ee;
+  border-radius: 11px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 4px 14px rgba(45, 49, 77, 0.025);
 }
 
 .portal-progress-label {
+  min-height: 19px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-
   color: var(--text-muted);
-  font-size: 0.82rem;
+}
+
+.portal-progress-stats {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 0.72rem;
   font-weight: 500;
 }
 
-.portal-progress-label strong {
-  color: var(--text-main);
+.portal-progress-stat {
+  white-space: nowrap;
+}
+
+.portal-progress-stat strong {
+  margin-right: 2px;
   font-family: var(--font-heading);
+  font-size: 0.82rem;
   font-weight: 700;
 }
 
-.portal-progress-track {
-  height: 10px;
-  overflow: hidden;
+.portal-progress-stat-complete strong {
+  color: #13815c;
+}
 
+.portal-progress-stat-review strong {
+  color: #a46b0d;
+}
+
+.portal-progress-stat-open strong {
+  color: #59668c;
+}
+
+.portal-progress-dot {
+  color: #b7bccb;
+  font-size: 0.66rem;
+}
+
+.portal-progress-percent {
+  flex: 0 0 auto;
+  color: #2f238b !important;
+  font-family: var(--font-heading);
+  font-size: 0.96rem;
+  font-weight: 700 !important;
+  letter-spacing: -0.02em;
+}
+
+.portal-progress-track-wrap {
+  position: relative;
+  padding-top: 31px;
+}
+
+.portal-progress-track {
+  height: 9px;
+  overflow: hidden;
   border-radius: 999px;
-  background: #edf0f4;
+  background: #e9ecf3;
+  box-shadow: inset 0 1px 2px rgba(44, 48, 77, 0.055);
 }
 
 .portal-progress-fill {
   height: 100%;
   border-radius: inherit;
-  background: var(--purple);
-  transition: width 220ms ease;
+  background: linear-gradient(90deg, #523fc3 0%, #4937ad 58%, #403096 100%);
+  box-shadow: 0 2px 7px rgba(73, 55, 173, 0.16);
+  transition: width 260ms ease;
 }
+
+.portal-progress-gnome-img {
+  position: absolute;
+  left: var(--portal-progress-marker);
+  top: 0;
+  z-index: 3;
+
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+
+  transform: translateX(-50%);
+  pointer-events: none;
+
+  filter:
+    drop-shadow(0 3px 5px rgba(28, 35, 52, 0.14))
+    drop-shadow(0 0 4px rgba(255, 255, 255, 0.78));
+  animation: portal-gnome-run-bob 1.7s ease-in-out infinite;
+}
+
+.portal-progress-complete .portal-progress-gnome-img {
+  width: 36px;
+  height: 36px;
+  animation: portal-gnome-celebrate 1.8s ease-in-out infinite;
+}
+
+@keyframes portal-gnome-run-bob {
+  0%,
+  100% {
+    transform: translateX(-50%) translateY(0) rotate(-2deg);
+  }
+
+  50% {
+    transform: translateX(-50%) translateY(-2px) rotate(2deg);
+  }
+}
+
+@keyframes portal-gnome-celebrate {
+  0%,
+  100% {
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+
+  50% {
+    transform: translateX(-50%) translateY(-3px) scale(1.04);
+  }
+}
+
+/* =========================================================
+   Tabs
+========================================================= */
 
 .portal-tabs {
   display: flex;
-  align-items: center;
-  gap: 6px;
+  align-items: flex-end;
+  gap: 7px;
 
-  padding-top: 2px;
-  border-bottom: 1px solid var(--border);
+  margin: 0 -20px;
+  padding: 0 20px;
+  border-bottom: 1px solid #e2e5ef;
 }
 
 .portal-tabs button {
   position: relative;
-
-  border: 0;
-  background: transparent;
-  color: #747b8d;
-
-  padding: 12px 14px;
+  min-height: 39px;
+  padding: 0 10px;
 
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
+
+  border: 0;
+  border-radius: 8px 8px 0 0;
+  background: transparent;
+  color: #7b8299;
 
   font-family: var(--font-heading);
-  font-size: 0.88rem;
-  font-weight: 650;
+  font-size: 0.76rem;
+  font-weight: 600;
 
   cursor: pointer;
+  transition:
+    color 140ms ease,
+    background-color 140ms ease;
 }
 
-.portal-tabs button:hover,
+.portal-tabs button svg {
+  width: 15px;
+  height: 15px;
+}
+
+.portal-tabs button:hover {
+  color: #4937ad;
+  background: #faf9ff;
+}
+
 .portal-tabs button.active {
-  color: var(--purple);
+  color: #38288f;
+  background: #f5f2ff;
 }
 
 .portal-tabs button.active::after {
   content: "";
   position: absolute;
-  left: 12px;
-  right: 12px;
+  left: 8px;
+  right: 8px;
   bottom: -1px;
-
   height: 2px;
-  background: var(--purple);
+  border-radius: 2px 2px 0 0;
+  background: #4937ad;
 }
 
-.portal-tabs span {
-  min-width: 22px;
-  height: 22px;
+.portal-tab-label {
+  line-height: 1;
+}
+
+.portal-tab-count {
+  min-width: 19px;
+  height: 19px;
+  padding: 0 5px;
 
   display: inline-grid;
   place-items: center;
 
   border-radius: 999px;
-  background: #edf0f4;
-
-  color: #6f7687;
-  font-size: 0.72rem;
+  background: #eceef5;
+  color: #737b93;
+  font-size: 0.62rem;
   font-weight: 700;
 }
 
-.portal-tabs button.active span {
-  background: var(--purple);
+.portal-tabs button.active .portal-tab-count {
+  background: linear-gradient(135deg, #604bdd, #4937ad);
   color: #ffffff;
+  box-shadow: 0 3px 7px rgba(73, 55, 173, 0.14);
 }
 
 /* =========================================================
-   Notice
+   Draft notice
 ========================================================= */
 
 .portal-notice-card {
-  margin-bottom: 16px;
-  padding: 12px 14px;
+  margin-bottom: 14px;
+  padding: 9px 11px;
 
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   flex-wrap: wrap;
 
-  border: 1px solid #d8d0a9;
-  border-radius: 10px;
+  border: 1px solid #eadfb8;
+  border-radius: 9px;
   background: #fffaf0;
+  box-shadow: 0 3px 10px rgba(95, 75, 16, 0.025);
 
   color: #6f530b;
-  font-size: 0.84rem;
+  font-size: 0.72rem;
+  line-height: 1.4;
 }
 
 .portal-notice-card strong {
@@ -394,9 +639,9 @@ a {
 }
 
 .portal-notice-card code {
-  padding: 2px 6px;
+  padding: 1px 5px;
   border: 1px solid #e8ddb6;
-  border-radius: 6px;
+  border-radius: 5px;
   background: #ffffff;
 
   font-family:
@@ -406,17 +651,17 @@ a {
     Monaco,
     Consolas,
     monospace;
-  font-size: 0.78rem;
+  font-size: 0.68rem;
 }
 
 /* =========================================================
-   Content Layout
+   Generic portal panels
 ========================================================= */
 
 .portal-content-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 310px;
-  gap: 16px;
+  grid-template-columns: minmax(0, 1fr) 260px;
+  gap: 12px;
   align-items: start;
 }
 
@@ -424,137 +669,496 @@ a {
   min-width: 0;
 }
 
-.portal-panel-header {
+.portal-panel-header,
+.notion-checklist-header {
+  padding: 14px 16px;
+
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 18px;
+  gap: 14px;
 
-  padding: 18px;
   background: #ffffff;
   border-bottom: 1px solid var(--border-soft);
 }
 
 .portal-panel-header.compact {
-  padding-bottom: 14px;
+  padding-bottom: 11px;
 }
 
-.portal-panel-header h2 {
+.portal-panel-header h2,
+.notion-checklist-header h2 {
   margin: 0;
-
   color: var(--text-main);
   font-family: var(--font-heading);
-  font-size: 1.12rem;
-  font-weight: 650;
+  font-size: 0.96rem;
+  font-weight: 700;
   letter-spacing: -0.015em;
   line-height: 1.2;
 }
 
-.portal-panel-header span {
+.portal-panel-header span,
+.notion-checklist-header > div > span {
   display: block;
   max-width: 740px;
-  margin-top: 5px;
-
+  margin-top: 4px;
   color: var(--text-muted);
-  font-size: 0.84rem;
-  line-height: 1.45;
+  font-size: 0.72rem;
+  line-height: 1.4;
 }
 
 .portal-side-card {
   position: sticky;
-  top: 18px;
+  top: 14px;
 }
 
 .portal-side-list {
   display: grid;
-  gap: 10px;
-  padding: 0 16px 16px;
+  gap: 7px;
+  padding: 0 12px 12px;
 }
 
 .side-fact {
-  padding: 12px;
-
+  padding: 9px;
   border: 1px solid var(--border-soft);
-  border-radius: 8px;
+  border-radius: 7px;
   background: #fbfcfd;
 }
 
-.side-fact small {
+.side-fact small,
+.meta-item small {
   display: block;
-
   color: #818998;
   font-family: var(--font-heading);
-  font-size: 0.7rem;
-  font-weight: 650;
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
-  letter-spacing: 0.055em;
 }
 
-.side-fact strong {
+.side-fact strong,
+.meta-item strong {
   display: block;
-  margin-top: 4px;
-
+  margin-top: 3px;
   color: #303442;
-  font-size: 0.88rem;
+  font-size: 0.72rem;
   font-weight: 600;
-  line-height: 1.35;
+  line-height: 1.3;
   overflow-wrap: anywhere;
 }
 
+.meta-item {
+  min-width: 0;
+  padding: 8px;
+  border: 1px solid var(--border-soft);
+  border-radius: 7px;
+  background: #fbfcfd;
+}
+
 /* =========================================================
-   Checklist
+   Notion-style checklist
 ========================================================= */
 
-.checklist-list {
-  display: grid;
-  gap: 12px;
-  padding: 16px;
+.notion-checklist-panel {
+  overflow: hidden;
 }
 
-.checklist-card {
-  padding: 14px;
+.notion-checklist-summary {
+  flex: 0 0 auto;
+  padding: 8px 10px;
+
+  border: 1px solid var(--border-soft);
+  border-radius: 7px;
+  background: #fafbfe;
+  text-align: right;
+}
+
+.notion-checklist-summary span {
+  display: block;
+  margin: 0;
+  color: var(--text-soft);
+  font-size: 0.66rem;
+  font-weight: 500;
+}
+
+.notion-checklist-summary strong {
+  display: block;
+  margin-top: 2px;
+  color: var(--text-main);
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.notion-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.notion-table-header,
+.notion-table-row {
+  display: grid;
+  grid-template-columns:
+    minmax(310px, 1.9fr)
+    minmax(105px, 0.65fr)
+    minmax(105px, 0.62fr)
+    minmax(130px, 0.78fr)
+    minmax(125px, 0.7fr);
+  align-items: center;
+}
+
+.notion-table-header {
+  min-width: 830px;
+  padding: 8px 16px;
+
+  background: #fafbfe;
+  border-bottom: 1px solid var(--border-soft);
+
+  color: #818998;
+  font-family: var(--font-heading);
+  font-size: 0.57rem;
+  font-weight: 700;
+  letter-spacing: 0.065em;
+  text-transform: uppercase;
+}
+
+.notion-table-row {
+  min-width: 830px;
+  padding: 10px 16px;
+
+  background: #ffffff;
+  border-bottom: 1px solid var(--border-soft);
+  transition: background-color 140ms ease;
+}
+
+.notion-table-row:last-child {
+  border-bottom: 0;
+}
+
+.notion-table-row:hover {
+  background: #fbfbfe;
+}
+
+.notion-task-cell {
+  min-width: 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.notion-task-icon {
+  width: 19px;
+  height: 19px;
+  flex: 0 0 19px;
+
+  display: grid;
+  place-items: center;
+
+  border: 1px solid #d5dae3;
+  border-radius: 5px;
+  background: #f5f6f8;
+  color: #818998;
+
+  font-size: 0.65rem;
+  font-weight: 700;
+}
+
+.notion-task-icon.status-waiting {
+  background: #fff0b8;
+  border-color: #e2b84a;
+  color: #8a5a00;
+}
+
+.notion-task-icon.status-not-started {
+  background: #f0f4fa;
+  border-color: #c8d2e1;
+  color: #526173;
+}
+
+.notion-task-icon.status-review,
+.notion-task-icon.status-ready {
+  background: #dfe8ff;
+  border-color: #adc2ff;
+  color: #3456b4;
+}
+
+.notion-task-icon.status-complete {
+  background: #dff4e8;
+  border-color: #9fd8b8;
+  color: #1f6f49;
+}
+
+.notion-task-copy {
+  min-width: 0;
+}
+
+.notion-task-copy h3 {
+  margin: 0;
+  color: var(--text-main);
+  font-family: var(--font-heading);
+  font-size: 0.79rem;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.notion-task-copy p {
+  max-width: 560px;
+  margin: 3px 0 0;
+  color: var(--text-muted);
+  font-size: 0.69rem;
+  line-height: 1.38;
+}
+
+.notion-status-cell,
+.notion-date-cell,
+.notion-file-cell,
+.notion-action-cell {
+  min-width: 0;
+  padding-left: 10px;
+}
+
+.status-pill {
+  flex: 0 0 auto;
+  min-height: 20px;
+  padding: 0 7px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 6px;
+  font-size: 0.61rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.status-pill.status-waiting {
+  background: #ffe6a3;
+  color: #7a4b00;
+}
+
+.status-pill.status-not-started {
+  background: #e9eef5;
+  color: #4d5b6f;
+}
+
+.status-pill.status-review,
+.status-pill.status-ready {
+  background: #dfe8ff;
+  color: #3456b4;
+}
+
+.status-pill.status-complete {
+  background: #dff4e8;
+  color: #1f6f49;
+}
+
+.notion-date-cell span,
+.notion-file-cell span {
+  display: block;
+  color: var(--text-main);
+  font-size: 0.69rem;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.notion-date-cell small {
+  display: block;
+  margin-top: 2px;
+  color: var(--text-muted);
+  font-size: 0.59rem;
+  font-weight: 500;
+}
+
+.notion-file-cell span {
+  color: var(--text-muted);
+}
+
+.notion-file-cell span.has-file {
+  color: var(--blue);
+}
+
+.notion-action-cell {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.notion-action-button {
+  min-width: 96px;
+  min-height: 27px;
+  font-size: 0.66rem;
+}
+
+.notion-action-button.disabled {
+  pointer-events: none;
+  opacity: 0.65;
+}
+
+.notion-mobile-meta {
+  display: none;
+}
+
+.hidden-file-input {
+  display: none;
+}
+
+/* =========================================================
+   Documents
+========================================================= */
+
+.documents-list {
+  display: grid;
+  gap: 9px;
+  padding: 12px;
+}
+
+.document-card {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: start;
+
+  padding: 10px;
 
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 9px;
   background: #ffffff;
+  box-shadow: 0 3px 10px rgba(45, 49, 77, 0.02);
 }
 
-.checklist-card.status-complete {
-  border-left: 4px solid var(--green);
-}
-
-.checklist-card.status-review {
-  border-left: 4px solid var(--blue);
-}
-
-.checklist-card.status-waiting {
-  border-left: 4px solid var(--gold);
-}
-
-.checklist-card.status-not-started {
-  border-left: 4px solid #a6adba;
-}
-
-.checklist-card-main {
-  display: grid;
-  grid-template-columns: 38px minmax(0, 1fr);
-  gap: 12px;
-  align-items: start;
-}
-
-.checklist-card-status-icon {
+.document-file-icon {
   width: 36px;
   height: 36px;
 
   display: grid;
   place-items: center;
 
+  border-radius: 7px;
+  background: #eef0eb;
+  color: #657455;
+
+  font-family:
+    ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    Monaco,
+    Consolas,
+    monospace;
+  font-size: 0.65rem;
+  font-weight: 700;
+}
+
+.document-main {
+  min-width: 0;
+}
+
+.document-title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 9px;
+}
+
+.document-card h3 {
+  margin: 0;
+  color: var(--text-main);
+  font-family: var(--font-heading);
+  font-size: 0.8rem;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.document-card p {
+  margin: 3px 0 0;
+  color: var(--text-muted);
+  font-size: 0.69rem;
+  line-height: 1.4;
+}
+
+.document-meta-row {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+  margin-top: 7px;
+}
+
+.document-meta-row span {
+  min-height: 20px;
+  padding: 0 7px;
+
+  display: inline-flex;
+  align-items: center;
+
+  border: 1px solid var(--border-soft);
+  border-radius: 999px;
+  background: #fbfcfd;
+
+  color: #6f7687;
+  font-size: 0.61rem;
+  font-weight: 500;
+}
+
+.document-note {
+  margin-top: 7px !important;
+}
+
+.document-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* =========================================================
+   Legacy checklist classes kept for compatibility
+========================================================= */
+
+.checklist-list {
+  display: grid;
+  gap: 9px;
+  padding: 12px;
+}
+
+.checklist-card {
+  padding: 10px;
+  border: 1px solid var(--border);
   border-radius: 8px;
+  background: #ffffff;
+}
+
+.checklist-card.status-complete {
+  border-left: 3px solid var(--green);
+}
+
+.checklist-card.status-review {
+  border-left: 3px solid var(--blue);
+}
+
+.checklist-card.status-waiting {
+  border-left: 3px solid var(--gold);
+}
+
+.checklist-card.status-not-started {
+  border-left: 3px solid #a6adba;
+}
+
+.checklist-card-main {
+  display: grid;
+  grid-template-columns: 29px minmax(0, 1fr);
+  gap: 9px;
+  align-items: start;
+}
+
+.checklist-card-status-icon {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 6px;
   background: #eef1ea;
   color: #5c6f46;
-
   font-family: var(--font-heading);
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .checklist-card.status-review .checklist-card-status-icon {
@@ -580,239 +1184,56 @@ a {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 12px;
+  gap: 9px;
 }
 
 .checklist-card h3 {
   margin: 0;
-
   color: var(--text-main);
   font-family: var(--font-heading);
-  font-size: 1rem;
-  font-weight: 650;
-  letter-spacing: -0.015em;
+  font-size: 0.8rem;
+  font-weight: 700;
   line-height: 1.25;
 }
 
 .checklist-card p {
-  margin: 5px 0 0;
-
+  margin: 3px 0 0;
   color: var(--text-muted);
-  font-size: 0.84rem;
-  line-height: 1.45;
-}
-
-.status-pill {
-  flex: 0 0 auto;
-
-  min-height: 26px;
-  padding: 0 10px;
-
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-
-  border-radius: 7px;
-
-  font-size: 0.72rem;
-  font-weight: 650;
-  white-space: nowrap;
-}
-
-.status-pill.status-complete {
-  background: var(--green-soft);
-  color: #2f6f4f;
-}
-
-.status-pill.status-review,
-.status-pill.status-ready {
-  background: var(--blue-soft);
-  color: var(--blue);
-}
-
-.status-pill.status-waiting {
-  background: var(--gold-soft);
-  color: var(--gold);
-}
-
-.status-pill.status-not-started {
-  background: #f1f3f6;
-  color: #6f7687;
+  font-size: 0.69rem;
+  line-height: 1.4;
 }
 
 .checklist-meta-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 8px;
-
-  margin-top: 12px;
-}
-
-.meta-item {
-  min-width: 0;
-  padding: 10px;
-
-  border: 1px solid var(--border-soft);
-  border-radius: 8px;
-  background: #fbfcfd;
-}
-
-.meta-item small {
-  display: block;
-
-  color: #818998;
-  font-family: var(--font-heading);
-  font-size: 0.68rem;
-  font-weight: 650;
-  letter-spacing: 0.055em;
-  text-transform: uppercase;
-}
-
-.meta-item strong {
-  display: block;
-  margin-top: 4px;
-
-  color: #303442;
-  font-size: 0.82rem;
-  font-weight: 600;
-  line-height: 1.3;
-  overflow-wrap: anywhere;
+  gap: 6px;
+  margin-top: 9px;
 }
 
 .checklist-helper {
-  padding: 10px 12px;
-
+  padding: 8px 9px;
   border: 1px dashed #d7dce5;
-  border-radius: 8px;
+  border-radius: 7px;
   background: #fbfcfd;
 }
 
 .checklist-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   flex-wrap: wrap;
-
-  margin-top: 12px;
-}
-
-.hidden-file-input {
-  display: none;
-}
-
-/* =========================================================
-   Documents
-========================================================= */
-
-.documents-list {
-  display: grid;
-  gap: 12px;
-  padding: 16px;
-}
-
-.document-card {
-  display: grid;
-  grid-template-columns: 52px minmax(0, 1fr) auto;
-  gap: 14px;
-  align-items: start;
-
-  padding: 14px;
-
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  background: #ffffff;
-}
-
-.document-file-icon {
-  width: 48px;
-  height: 48px;
-
-  display: grid;
-  place-items: center;
-
-  border-radius: 8px;
-  background: #eef0eb;
-  color: #657455;
-
-  font-family:
-    ui-monospace,
-    SFMono-Regular,
-    Menlo,
-    Monaco,
-    Consolas,
-    monospace;
-  font-size: 0.78rem;
-  font-weight: 800;
-}
-
-.document-main {
-  min-width: 0;
-}
-
-.document-title-row {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.document-card h3 {
-  margin: 0;
-
-  color: var(--text-main);
-  font-family: var(--font-heading);
-  font-size: 1rem;
-  font-weight: 650;
-  line-height: 1.25;
-}
-
-.document-card p {
-  margin: 5px 0 0;
-
-  color: var(--text-muted);
-  font-size: 0.84rem;
-  line-height: 1.45;
-}
-
-.document-meta-row {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-
-  margin-top: 10px;
-}
-
-.document-meta-row span {
-  min-height: 26px;
-
-  display: inline-flex;
-  align-items: center;
-
-  padding: 0 9px;
-  border: 1px solid var(--border-soft);
-  border-radius: 999px;
-  background: #fbfcfd;
-
-  color: #6f7687;
-  font-size: 0.74rem;
-  font-weight: 600;
-}
-
-.document-note {
-  margin-top: 10px !important;
-}
-
-.document-actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  margin-top: 9px;
 }
 
 /* =========================================================
    Responsive
 ========================================================= */
 
-@media (max-width: 980px) {
+@media (max-width: 1080px) {
+  .portal-main {
+    width: min(100% - 32px, 1240px);
+  }
+
   .portal-summary-grid,
   .checklist-meta-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -827,7 +1248,7 @@ a {
   }
 
   .document-card {
-    grid-template-columns: 52px minmax(0, 1fr);
+    grid-template-columns: 38px minmax(0, 1fr);
   }
 
   .document-actions {
@@ -837,20 +1258,93 @@ a {
   }
 }
 
-@media (max-width: 720px) {
+@media (max-width: 820px) {
+  .notion-checklist-header {
+    flex-direction: column;
+  }
+
+  .notion-checklist-summary {
+    width: 100%;
+    text-align: left;
+  }
+
+  .notion-table-header {
+    display: none;
+  }
+
+  .notion-table-row {
+    min-width: 0;
+    grid-template-columns: 1fr;
+    gap: 9px;
+    padding: 12px;
+  }
+
+  .notion-status-cell,
+  .notion-date-cell,
+  .notion-file-cell {
+    display: none;
+  }
+
+  .notion-action-cell {
+    padding-left: 27px;
+    justify-content: flex-start;
+  }
+
+  .notion-action-button {
+    width: 100%;
+  }
+
+  .notion-mobile-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-top: 7px;
+  }
+
+  .notion-mobile-meta span {
+    padding: 3px 6px;
+    border: 1px solid var(--border-soft);
+    border-radius: 999px;
+    background: #fbfcfd;
+    color: var(--text-soft);
+    font-size: 0.59rem;
+    font-weight: 600;
+  }
+}
+
+@media (max-width: 700px) {
   .portal-main {
-    width: min(100% - 24px, 1180px);
-    padding: 18px 0;
+    width: min(100% - 18px, 1240px);
+    padding: 13px 0 20px;
   }
 
   .portal-header-card {
-    padding: 16px;
+    gap: 12px;
+    padding: 14px 14px 0;
+    border-radius: 12px;
   }
 
   .portal-header-top,
   .checklist-card-title-row,
   .document-title-row {
     flex-direction: column;
+  }
+
+  .portal-brand-row {
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .portal-logo {
+    width: 42px;
+    height: 42px;
+    flex-basis: 42px;
+    border-radius: 10px;
+    font-size: 0.88rem;
+  }
+
+  .portal-header-card h1 {
+    font-size: clamp(1.35rem, 7vw, 1.9rem);
   }
 
   .portal-contact-button {
@@ -862,8 +1356,78 @@ a {
     grid-template-columns: 1fr;
   }
 
+  .portal-summary-grid {
+    gap: 8px;
+  }
+
+  .portal-summary-card {
+    min-height: 72px;
+    padding: 10px 11px;
+    grid-template-columns: 34px minmax(0, 1fr);
+    gap: 9px;
+  }
+
+  .portal-summary-icon {
+    width: 34px;
+    height: 34px;
+  }
+
+  .portal-summary-icon svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .portal-progress-area {
+    padding: 11px 10px 10px;
+  }
+
+  .portal-progress-label {
+    align-items: flex-start;
+  }
+
+  .portal-progress-stats {
+    gap: 4px 6px;
+    font-size: 0.68rem;
+  }
+
+  .portal-progress-dot {
+    display: none;
+  }
+
+  .portal-progress-percent {
+    font-size: 0.9rem;
+  }
+
+  .portal-progress-track-wrap {
+    padding-top: 27px;
+  }
+
+  .portal-progress-gnome-img {
+    width: 28px;
+    height: 28px;
+  }
+
+  .portal-progress-complete .portal-progress-gnome-img {
+    width: 31px;
+    height: 31px;
+  }
+
   .portal-tabs {
+    margin: 0 -14px;
+    padding: 0 14px;
+    gap: 3px;
     overflow-x: auto;
+  }
+
+  .portal-tabs button {
+    min-height: 37px;
+    padding: 0 8px;
+    white-space: nowrap;
+  }
+
+  .portal-panel-header,
+  .notion-checklist-header {
+    padding: 12px;
   }
 
   .checklist-card-main {
@@ -871,8 +1435,8 @@ a {
   }
 
   .checklist-card-status-icon {
-    width: 34px;
-    height: 34px;
+    width: 27px;
+    height: 27px;
   }
 
   .checklist-actions,
@@ -893,446 +1457,5 @@ a {
   .document-actions .primary-dashboard-button,
   .document-actions .secondary-dashboard-button {
     width: 100%;
-  }
-}
-
-
-/* =========================================================
-   Notion-Style Checklist
-========================================================= */
-
-.notion-checklist-panel {
-  overflow: hidden;
-}
-
-.notion-checklist-header {
-  padding: 18px 20px;
-
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 18px;
-
-  background: #ffffff;
-  border-bottom: 1px solid var(--border-soft);
-}
-
-.notion-checklist-header h2 {
-  margin: 0;
-
-  color: var(--text-main);
-  font-family: var(--font-heading);
-  font-size: 1.18rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-}
-
-.notion-checklist-header span {
-  display: block;
-  margin-top: 5px;
-
-  color: var(--text-muted);
-  font-size: 0.86rem;
-  line-height: 1.45;
-}
-
-.notion-checklist-summary {
-  flex: 0 0 auto;
-
-  padding: 10px 12px;
-
-  border: 1px solid var(--border-soft);
-  border-radius: 8px;
-  background: #fbfcfd;
-
-  text-align: right;
-}
-
-.notion-checklist-summary span {
-  display: block;
-  margin: 0;
-
-  color: var(--text-soft);
-  font-size: 0.78rem;
-  font-weight: 600;
-}
-
-.notion-checklist-summary strong {
-  display: block;
-  margin-top: 3px;
-
-  color: var(--text-main);
-  font-size: 0.9rem;
-  font-weight: 700;
-}
-
-.notion-table-wrap {
-  width: 100%;
-  overflow-x: auto;
-}
-
-.notion-table-header,
-.notion-table-row {
-  display: grid;
-  grid-template-columns:
-    minmax(340px, 1.8fr)
-    minmax(130px, 0.7fr)
-    minmax(125px, 0.65fr)
-    minmax(150px, 0.8fr)
-    minmax(150px, 0.7fr);
-  align-items: center;
-}
-
-.notion-table-header {
-  min-width: 930px;
-
-  padding: 10px 20px;
-
-  background: #fbfcfd;
-  border-bottom: 1px solid var(--border-soft);
-
-  color: #818998;
-  font-family: var(--font-heading);
-  font-size: 0.68rem;
-  font-weight: 700;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-}
-
-.notion-table-row {
-  min-width: 930px;
-
-  padding: 14px 20px;
-
-  background: #ffffff;
-  border-bottom: 1px solid var(--border-soft);
-
-  transition: background-color 150ms ease;
-}
-
-.notion-table-row:last-child {
-  border-bottom: 0;
-}
-
-.notion-table-row:hover {
-  background: #fcfcfd;
-}
-
-.notion-task-cell {
-  min-width: 0;
-
-  display: flex;
-  align-items: flex-start;
-  gap: 11px;
-}
-
-.notion-task-icon {
-  width: 24px;
-  height: 24px;
-  flex: 0 0 24px;
-
-  display: grid;
-  place-items: center;
-
-  border: 1px solid #d5dae3;
-  border-radius: 7px;
-  background: #f5f6f8;
-
-  color: #818998;
-  font-size: 0.78rem;
-  font-weight: 800;
-}
-
-.notion-task-icon.status-complete {
-  border-color: #cfe2d3;
-  background: var(--green-soft);
-  color: var(--green);
-}
-
-.notion-task-icon.status-review {
-  border-color: #d6e0f2;
-  background: var(--blue-soft);
-  color: var(--blue);
-}
-
-.notion-task-icon.status-waiting {
-  border-color: #f0dfb8;
-  background: var(--gold-soft);
-  color: var(--gold);
-}
-
-.notion-task-icon.status-not-started {
-  border-color: #dfe4ec;
-  background: #f5f6f8;
-  color: #8b93a1;
-}
-
-.notion-task-copy {
-  min-width: 0;
-}
-
-.notion-task-copy h3 {
-  margin: 0;
-
-  color: var(--text-main);
-  font-family: var(--font-heading);
-  font-size: 0.94rem;
-  font-weight: 700;
-  line-height: 1.3;
-}
-
-.notion-task-copy p {
-  max-width: 560px;
-  margin: 4px 0 0;
-
-  color: var(--text-muted);
-  font-size: 0.82rem;
-  line-height: 1.45;
-}
-
-.notion-status-cell,
-.notion-date-cell,
-.notion-file-cell,
-.notion-action-cell {
-  min-width: 0;
-  padding-left: 14px;
-}
-
-.notion-date-cell span,
-.notion-file-cell span {
-  display: block;
-
-  color: var(--text-main);
-  font-size: 0.84rem;
-  font-weight: 600;
-
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.notion-date-cell small {
-  display: block;
-  margin-top: 3px;
-
-  color: var(--text-muted);
-  font-size: 0.72rem;
-  font-weight: 600;
-}
-
-.notion-file-cell span {
-  color: var(--text-muted);
-}
-
-.notion-file-cell span.has-file {
-  color: var(--blue);
-}
-
-.notion-action-cell {
-  display: flex;
-  justify-content: flex-end;
-}
-
-.notion-action-button {
-  min-width: 120px;
-  min-height: 34px;
-
-  font-size: 0.78rem;
-}
-
-.notion-action-button.disabled {
-  pointer-events: none;
-  opacity: 0.65;
-}
-
-.notion-mobile-meta {
-  display: none;
-}
-
-/* Mobile: table becomes clean stacked rows */
-@media (max-width: 820px) {
-  .notion-checklist-header {
-    flex-direction: column;
-  }
-
-  .notion-checklist-summary {
-    width: 100%;
-    text-align: left;
-  }
-
-  .notion-table-header {
-    display: none;
-  }
-
-  .notion-table-row {
-    min-width: 0;
-
-    grid-template-columns: 1fr;
-    gap: 12px;
-
-    padding: 16px;
-  }
-
-  .notion-status-cell,
-  .notion-date-cell,
-  .notion-file-cell {
-    display: none;
-  }
-
-  .notion-action-cell {
-    padding-left: 35px;
-    justify-content: flex-start;
-  }
-
-  .notion-action-button {
-    width: 100%;
-  }
-
-  .notion-mobile-meta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-
-    margin-top: 9px;
-  }
-
-  .notion-mobile-meta span {
-    padding: 4px 8px;
-
-    border: 1px solid var(--border-soft);
-    border-radius: 999px;
-    background: #fbfcfd;
-
-    color: var(--text-soft);
-    font-size: 0.72rem;
-    font-weight: 650;
-  }
-}
-
-
-
-/* =========================================================
-   Stronger Checklist Row Colors 
-========================================================= */
-
-/* Waiting / Needs You */
-.notion-task-icon.status-waiting {
-  background: #fff0b8;
-  border-color: #e2b84a;
-  color: #8a5a00;
-}
-
-.status-pill.status-waiting {
-  background: #ffe6a3;
-  color: #7a4b00;
-}
-
-/* Not Started */
-.notion-task-icon.status-not-started {
-  background: #f0f4fa;
-  border-color: #c8d2e1;
-  color: #526173;
-}
-
-.status-pill.status-not-started {
-  background: #e9eef5;
-  color: #4d5b6f;
-}
-
-/* In Review */
-.notion-task-icon.status-review {
-  background: #dfe8ff;
-  border-color: #adc2ff;
-  color: #3456b4;
-}
-
-.status-pill.status-review,
-.status-pill.status-ready {
-  background: #dfe8ff;
-  color: #3456b4;
-}
-
-/* Complete */
-.notion-task-icon.status-complete {
-  background: #dff4e8;
-  border-color: #9fd8b8;
-  color: #1f6f49;
-}
-
-.status-pill.status-complete {
-  background: #dff4e8;
-  color: #1f6f49;
-}
-
-
-
-/* =========================================================
-   Progress Gnome Marker
-   Running gnome while in progress, celebration gnome when complete.
-========================================================= */
-
-.portal-progress-track-wrap {
-  position: relative;
-  padding-top: 34px;
-}
-
-.portal-progress-gnome-img {
-  position: absolute;
-  left: var(--portal-progress-marker);
-  top: 0;
-  z-index: 2;
-
-  width: 34px;
-  height: 34px;
-  object-fit: contain;
-
-  transform: translateX(-50%);
-  pointer-events: none;
-
-  filter: drop-shadow(0 4px 6px rgba(28, 35, 52, 0.14));
-  animation: portal-gnome-run-bob 1.7s ease-in-out infinite;
-}
-
-.portal-progress-complete .portal-progress-gnome-img {
-  width: 38px;
-  height: 38px;
-  animation: portal-gnome-celebrate 1.8s ease-in-out infinite;
-}
-
-@keyframes portal-gnome-run-bob {
-  0%,
-  100% {
-    transform: translateX(-50%) translateY(0) rotate(-2deg);
-  }
-
-  50% {
-    transform: translateX(-50%) translateY(-3px) rotate(2deg);
-  }
-}
-
-@keyframes portal-gnome-celebrate {
-  0%,
-  100% {
-    transform: translateX(-50%) translateY(0) scale(1);
-  }
-
-  50% {
-    transform: translateX(-50%) translateY(-4px) scale(1.05);
-  }
-}
-
-@media (max-width: 720px) {
-  .portal-progress-track-wrap {
-    padding-top: 30px;
-  }
-
-  .portal-progress-gnome-img {
-    width: 30px;
-    height: 30px;
-  }
-
-  .portal-progress-complete .portal-progress-gnome-img {
-    width: 34px;
-    height: 34px;
   }
 }
