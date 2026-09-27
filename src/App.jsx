@@ -946,7 +946,7 @@ function ChecklistTab({ portalToken, portalRecord, bookingReference, checklistIt
           <span>Task</span>
           <span>Status</span>
           <span>Due Date</span>
-          <span>Info / File</span>
+          <span>Details</span>
           <span>Action</span>
         </div>
         <div className="notion-table-body">
@@ -1049,6 +1049,9 @@ function ChecklistItemCard({ item, portalToken, portalRecord, bookingReference, 
         if (item.status === "waitingOnGuest") {
             return "Needs You";
         }
+        if (isStaffOnly && item.status === "notStarted") {
+            return "Pending";
+        }
         return "Not Started";
     }
 
@@ -1057,7 +1060,7 @@ function ChecklistItemCard({ item, portalToken, portalRecord, bookingReference, 
             return "Received";
         }
         if (canUnsubmit) {
-            return "Unsubmit";
+            return "Unconfirm";
         }
         if (isInReview) {
             return "Submitted";
@@ -1069,7 +1072,7 @@ function ChecklistItemCard({ item, portalToken, portalRecord, bookingReference, 
             return hasConfirmableText ? "Confirm" : "Add Info";
         }
         if (isGuestCount) {
-            return "Submit";
+            return "Confirm";
         }
         if (isUploadItem) {
             return item.id === "contract" ? "Upload Signed File" : "Upload File";
@@ -1155,10 +1158,16 @@ function ChecklistItemCard({ item, portalToken, portalRecord, bookingReference, 
                   ? "View Info"
                   : "Add Info"}
           </button>
-        ) : (
+        ) : isUploadItem ? (
           <span className={item.uploadedFileName ? "has-file" : ""}>
             {item.uploadedFileName || "No upload yet"}
           </span>
+        ) : isGuestCount ? (
+          <span>Confirmation only</span>
+        ) : isStaffOnly ? (
+          <span>Staff managed</span>
+        ) : (
+          <span>—</span>
         )}
       </div>
       <div className="notion-action-cell">
@@ -1166,19 +1175,12 @@ function ChecklistItemCard({ item, portalToken, portalRecord, bookingReference, 
         {isGuestCount && !isCompleted ? (<button className={`secondary-dashboard-button notion-action-button ${canUnsubmit ? "notion-action-button-unsubmit" : ""}`} type="button" disabled={isSaving || isResponseLoading} onClick={handleGuestCountAction}>
           {isSaving
             ? canUnsubmit
-                ? "Unsubmitting..."
+                ? "Unconfirming..."
                 : "Confirming..."
             : getActionLabel()}
-        </button>) : (<label
-          className={
-            isUploadLocked || !isUploadItem
-              ? `secondary-dashboard-button notion-action-button disabled ${
-                  isCompleted ? "portal-checklist-action-received" : ""
-                }`
-              : "primary-dashboard-button notion-action-button"
-          }
-          htmlFor={isUploadLocked || !isUploadItem ? undefined : inputId}
-        >
+        </button>) : (<label className={isUploadLocked || !isUploadItem
+            ? `secondary-dashboard-button notion-action-button disabled ${isCompleted ? "portal-checklist-action-received" : ""}`
+            : "primary-dashboard-button notion-action-button"} htmlFor={isUploadLocked || !isUploadItem ? undefined : inputId}>
           {getActionLabel()}
         </label>)}
       </div>

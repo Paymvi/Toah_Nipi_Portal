@@ -810,9 +810,9 @@ a {
 }
 
 .notion-task-icon.status-not-started {
-  background: #f0f4fa;
-  border-color: #c8d2e1;
-  color: #526173;
+  background: #fff8dc;
+  border-color: #e8d58d;
+  color: #8a6911;
 }
 
 .notion-task-icon.status-review,
@@ -876,8 +876,8 @@ a {
 }
 
 .status-pill.status-not-started {
-  background: #e9eef5;
-  color: #4d5b6f;
+  background: #fff3c7;
+  color: #7a5b08;
 }
 
 .status-pill.status-review,
