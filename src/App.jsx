@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 
 import "./App.css";
 
+import { supabase } from "./lib/supabaseClient";
+
 import {
   fetchPortalRecord,
   markPortalItemReady,
@@ -58,6 +60,69 @@ function getDocumentTypeLabel(fileName) {
     return "FILE";
   }
   return extension;
+}
+
+const TEXT_RESPONSE_ITEM_IDS = new Set([
+  "food-allergy-information",
+  "guest-count",
+]);
+
+function isTextResponseItem(item) {
+  return TEXT_RESPONSE_ITEM_IDS.has(
+    String(item?.id || "").trim()
+  );
+}
+
+async function fetchPortalChecklistItemResponse(portalToken, itemId) {
+  const cleanedToken = String(portalToken || "").trim();
+  const cleanedItemId = String(itemId || "").trim();
+
+  if (!cleanedToken || !cleanedItemId) {
+    return "";
+  }
+
+  const { data, error } = await supabase.rpc(
+    "portal_get_checklist_item_response",
+    {
+      p_portal_token: cleanedToken,
+      p_item_id: cleanedItemId,
+    }
+  );
+
+  if (error) {
+    throw error;
+  }
+
+  return String(data || "");
+}
+
+async function submitPortalChecklistItemResponse(
+  portalToken,
+  itemId,
+  responseText
+) {
+  const cleanedToken = String(portalToken || "").trim();
+  const cleanedItemId = String(itemId || "").trim();
+  const cleanedResponse = String(responseText || "").trim();
+
+  if (!cleanedToken || !cleanedItemId || !cleanedResponse) {
+    return null;
+  }
+
+  const { data, error } = await supabase.rpc(
+    "portal_submit_checklist_item_response",
+    {
+      p_portal_token: cleanedToken,
+      p_item_id: cleanedItemId,
+      p_response_text: cleanedResponse,
+    }
+  );
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
 }
 
 // const PORTAL_RECORDS = {
@@ -314,6 +379,39 @@ export default function App() {
             setSavingItemId("");
         }
     }
+    async function handleSubmitTextResponse(item, responseText) {
+        const cleanedResponse = String(responseText || "").trim();
+
+        if (!cleanedResponse) {
+            return false;
+        }
+
+        try {
+            setSavingItemId(item.id);
+
+            const updatedRecord = await submitPortalChecklistItemResponse(
+                portalToken,
+                item.id,
+                cleanedResponse
+            );
+
+            if (!updatedRecord) {
+                alert("Could not confirm this information. Please contact Toah Nipi staff.");
+                return false;
+            }
+
+            setPortalRecord(updatedRecord);
+            return true;
+        }
+        catch (error) {
+            console.error("Could not submit portal checklist information:", error);
+            alert("Could not confirm this information. Please try again or contact staff.");
+            return false;
+        }
+        finally {
+            setSavingItemId("");
+        }
+    }
     if (isLoadingPortal) {
         return (<main className="portal-shell">
         <section className="portal-main">
@@ -347,7 +445,7 @@ export default function App() {
       <section className="portal-main">
         <PortalHeader portalRecord={portalRecord} progress={progress} activeTab={activeTab} setActiveTab={setActiveTab} documentCount={documents.length}/>
         <PortalNotice portalToken={portalToken}/>
-        {activeTab === "checklist" ? (<ChecklistTab portalRecord={portalRecord} checklistItems={checklistItems} onUpload={handleUpload} onMarkReady={handleMarkReady} onUnmarkReady={handleUnmarkReady} savingItemId={savingItemId}/>) : (<DocumentsTab documents={documents}/>)}
+        {activeTab === "checklist" ? (<ChecklistTab portalToken={portalToken} portalRecord={portalRecord} checklistItems={checklistItems} onUpload={handleUpload} onMarkReady={handleMarkReady} onUnmarkReady={handleUnmarkReady} onSubmitTextResponse={handleSubmitTextResponse} savingItemId={savingItemId}/>) : (<DocumentsTab documents={documents}/>)}
       </section>
     </main>);
 }
@@ -511,7 +609,7 @@ function PortalNotice({ portalToken }) {
     </section>);
 }
 
-function ChecklistTab({ portalRecord, checklistItems, onUpload, onMarkReady, onUnmarkReady, savingItemId, }) {
+function ChecklistTab({ portalToken, portalRecord, checklistItems, onUpload, onMarkReady, onUnmarkReady, onSubmitTextResponse, savingItemId, }) {
     return (<section className="dashboard-card notion-checklist-panel">
       <div className="notion-checklist-header">
         <div>
@@ -532,17 +630,28 @@ function ChecklistTab({ portalRecord, checklistItems, onUpload, onMarkReady, onU
           <span>Task</span>
           <span>Status</span>
           <span>Due Date</span>
-          <span>File</span>
+          <span>Info / File</span>
           <span>Action</span>
         </div>
         <div className="notion-table-body">
-          {checklistItems.map((item) => (<ChecklistItemCard key={item.id} item={item} onUpload={onUpload} onMarkReady={onMarkReady} onUnmarkReady={onUnmarkReady} isSaving={savingItemId === item.id}/>))}
+          {checklistItems.map((item) => (
+            <ChecklistItemCard
+              key={item.id}
+              item={item}
+              portalToken={portalToken}
+              onUpload={onUpload}
+              onMarkReady={onMarkReady}
+              onUnmarkReady={onUnmarkReady}
+              onSubmitTextResponse={onSubmitTextResponse}
+              isSaving={savingItemId === item.id}
+            />
+          ))}
         </div>
       </div>
     </section>);
 }
 
-function ChecklistItemCard({ item, onUpload, onMarkReady, onUnmarkReady, isSaving }) {
+function ChecklistItemCard({ item, portalToken, onUpload, onMarkReady, onUnmarkReady, onSubmitTextResponse, isSaving }) {
     const statusInfo = getStatusInfo(item.status);
     const inputId = `upload-${item.id}`;
     const isCompleted = item.status === "completed";
@@ -550,8 +659,61 @@ function ChecklistItemCard({ item, onUpload, onMarkReady, onUnmarkReady, isSavin
     const isStaffOnly = item.guestAction === "none";
     const isGuestCount = item.guestAction === "mark_ready";
     const isUploadItem = item.guestAction === "upload_file";
+    const isTextResponseTask = isTextResponseItem(item);
     const canUnsubmit = isGuestCount && isInReview;
     const isUploadLocked = isCompleted || isInReview;
+
+    const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+    const [responseText, setResponseText] = useState("");
+    const [isResponseLoading, setIsResponseLoading] = useState(isTextResponseTask);
+    const [responseError, setResponseError] = useState("");
+
+    useEffect(() => {
+        let isMounted = true;
+
+        async function loadResponse() {
+            if (!isTextResponseTask) {
+                setIsResponseLoading(false);
+                return;
+            }
+
+            try {
+                setIsResponseLoading(true);
+                setResponseError("");
+
+                const savedResponse = await fetchPortalChecklistItemResponse(
+                    portalToken,
+                    item.id
+                );
+
+                if (isMounted) {
+                    setResponseText(savedResponse);
+                }
+            }
+            catch (error) {
+                console.error("Could not load portal checklist information:", error);
+
+                if (isMounted) {
+                    setResponseError("Could not load the saved information.");
+                }
+            }
+            finally {
+                if (isMounted) {
+                    setIsResponseLoading(false);
+                }
+            }
+        }
+
+        loadResponse();
+
+        return () => {
+            isMounted = false;
+        };
+    }, [isTextResponseTask, item.id, portalToken]);
+
+    const hasResponseText = String(responseText || "").trim().length > 0;
+    const responseIsLocked = isCompleted || isInReview;
+
     function getShortStatusLabel() {
         if (isCompleted) {
             return "Complete";
@@ -564,6 +726,7 @@ function ChecklistItemCard({ item, onUpload, onMarkReady, onUnmarkReady, isSavin
         }
         return "Not Started";
     }
+
     function getActionLabel() {
         if (isCompleted) {
             return "Received";
@@ -577,6 +740,9 @@ function ChecklistItemCard({ item, onUpload, onMarkReady, onUnmarkReady, isSavin
         if (isStaffOnly) {
             return "Staff Updates";
         }
+        if (isTextResponseTask) {
+            return hasResponseText ? "Confirm" : "Add Info";
+        }
         if (isGuestCount) {
             return "Submit";
         }
@@ -585,14 +751,36 @@ function ChecklistItemCard({ item, onUpload, onMarkReady, onUnmarkReady, isSavin
         }
         return "No Action";
     }
-    function handleGuestCountAction() {
+
+    async function handleGuestCountAction() {
         if (canUnsubmit) {
             onUnmarkReady(item);
             return;
         }
+
+        if (isTextResponseTask) {
+            if (!hasResponseText) {
+                setIsDetailsOpen(true);
+                return;
+            }
+
+            const didSubmit = await onSubmitTextResponse(item, responseText);
+
+            if (didSubmit) {
+                setIsDetailsOpen(true);
+            }
+
+            return;
+        }
+
         onMarkReady(item);
     }
-    return (<article className="notion-table-row">
+
+    function handleInfoButtonClick() {
+        setIsDetailsOpen((current) => !current);
+    }
+
+    return (<article className={`notion-table-row ${isDetailsOpen ? "notion-table-row-expanded" : ""}`}>
       <div className="notion-task-cell">
         <div className={`notion-task-icon ${statusInfo.className}`}>
           {isCompleted
@@ -621,17 +809,35 @@ function ChecklistItemCard({ item, onUpload, onMarkReady, onUnmarkReady, isSavin
         <small>{item.required ? "Required" : "Optional"}</small>
       </div>
       <div className="notion-file-cell">
-        <span className={item.uploadedFileName ? "has-file" : ""}>
-          {item.uploadedFileName || "No upload yet"}
-        </span>
+        {isTextResponseTask ? (
+          <button
+            className={`notion-info-toggle ${hasResponseText ? "has-info" : ""}`}
+            type="button"
+            disabled={isResponseLoading}
+            aria-expanded={isDetailsOpen}
+            onClick={handleInfoButtonClick}
+          >
+            {isResponseLoading
+              ? "Loading..."
+              : isDetailsOpen
+                ? "Hide Info"
+                : hasResponseText
+                  ? "View Info"
+                  : "Add Info"}
+          </button>
+        ) : (
+          <span className={item.uploadedFileName ? "has-file" : ""}>
+            {item.uploadedFileName || "No upload yet"}
+          </span>
+        )}
       </div>
       <div className="notion-action-cell">
         <input id={inputId} className="hidden-file-input" type="file" disabled={isUploadLocked || !isUploadItem} onChange={(event) => onUpload(item, event.target.files?.[0])}/>
-        {isGuestCount && !isCompleted ? (<button className={`secondary-dashboard-button notion-action-button ${canUnsubmit ? "notion-action-button-unsubmit" : ""}`} type="button" disabled={isSaving} onClick={handleGuestCountAction}>
+        {isGuestCount && !isCompleted ? (<button className={`secondary-dashboard-button notion-action-button ${canUnsubmit ? "notion-action-button-unsubmit" : ""}`} type="button" disabled={isSaving || isResponseLoading} onClick={handleGuestCountAction}>
           {isSaving
             ? canUnsubmit
                 ? "Unsubmitting..."
-                : "Submitting..."
+                : "Confirming..."
             : getActionLabel()}
         </button>) : (<label className={isUploadLocked || !isUploadItem
             ? "secondary-dashboard-button notion-action-button disabled"
@@ -639,6 +845,73 @@ function ChecklistItemCard({ item, onUpload, onMarkReady, onUnmarkReady, isSavin
           {getActionLabel()}
         </label>)}
       </div>
+
+      {isTextResponseTask && isDetailsOpen && (
+        <div className="notion-response-panel">
+          <div className="notion-response-panel-heading">
+            <div>
+              <span className="notion-response-kicker">
+                {item.id === "guest-count" ? "Final guest counts" : "Food allergy information"}
+              </span>
+              <strong>
+                {hasResponseText ? "Current information" : "Add information for staff"}
+              </strong>
+            </div>
+
+            {isInReview && (
+              <span className="notion-response-review-badge">
+                Waiting for staff confirmation
+              </span>
+            )}
+
+            {isCompleted && (
+              <span className="notion-response-complete-badge">
+                Confirmed by staff
+              </span>
+            )}
+          </div>
+
+          {responseError ? (
+            <div className="notion-response-error">
+              {responseError}
+            </div>
+          ) : item.id === "guest-count" ? (
+            <label className="notion-response-field">
+              <span>Full-time, part-time, and Day Use counts</span>
+              <input
+                type="text"
+                value={responseText}
+                disabled={responseIsLocked || isSaving}
+                placeholder="Example: 38 full-time, 6 part-time, 4 Day Use"
+                onChange={(event) => setResponseText(event.target.value)}
+              />
+            </label>
+          ) : (
+            <label className="notion-response-field">
+              <span>Guest names and specific food allergies</span>
+              <textarea
+                rows="4"
+                value={responseText}
+                disabled={responseIsLocked || isSaving}
+                placeholder="Example: Sam — peanut allergy; Taylor — gluten-free"
+                onChange={(event) => setResponseText(event.target.value)}
+              />
+            </label>
+          )}
+
+          <div className="notion-response-footer">
+            <span>
+              {responseIsLocked
+                ? isCompleted
+                  ? "Staff has confirmed this information."
+                  : "Unsubmit this task if you need to edit the information before staff confirms it."
+                : hasResponseText
+                  ? "Click Confirm in the Action column when this information is ready for staff review."
+                  : "Enter the information above before confirming this task."}
+            </span>
+          </div>
+        </div>
+      )}
     </article>);
 }
 
