@@ -1023,6 +1023,90 @@ a {
   line-height: 1.3;
 }
 
+.notion-current-reference {
+  padding: 11px 12px;
+  border: 1px solid #d9dfd3;
+  border-radius: 9px;
+  background: #f8faf6;
+  box-shadow: inset 3px 0 0 #84936d;
+}
+
+.notion-current-reference.empty {
+  border-color: #e1e4eb;
+  background: #f8f9fb;
+  box-shadow: inset 3px 0 0 #b4bbc8;
+}
+
+.notion-current-reference-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.notion-current-reference-heading > div {
+  min-width: 0;
+}
+
+.notion-current-reference-heading > div > span {
+  display: block;
+  color: #566146;
+  font-family: var(--font-heading);
+  font-size: 0.66rem;
+  font-weight: 700;
+}
+
+.notion-current-reference.empty .notion-current-reference-heading > div > span {
+  color: #687183;
+}
+
+.notion-current-reference-heading small {
+  display: block;
+  margin-top: 2px;
+  color: #8a927f;
+  font-size: 0.59rem;
+  font-weight: 500;
+}
+
+.notion-current-reference.empty .notion-current-reference-heading small {
+  color: #9299a8;
+}
+
+.notion-current-reference-badge {
+  flex: 0 0 auto;
+  min-height: 21px;
+  padding: 0 7px;
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid #d7ddcf;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #6b7758;
+  font-size: 0.56rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.notion-current-reference.empty .notion-current-reference-badge {
+  border-color: #dde1e8;
+  color: #7b8393;
+}
+
+.notion-current-reference-value {
+  margin-top: 8px;
+  color: #303728;
+  font-size: 0.72rem;
+  font-weight: 600;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.notion-current-reference.empty .notion-current-reference-value {
+  color: #848c9b;
+  font-weight: 500;
+}
+
 .notion-response-review-badge,
 .notion-response-complete-badge {
   min-height: 23px;
@@ -1433,6 +1517,10 @@ a {
     flex-direction: column;
   }
 
+  .notion-current-reference-heading {
+    align-items: flex-start;
+  }
+
   .notion-response-review-badge,
   .notion-response-complete-badge {
     white-space: normal;
@@ -1602,4 +1690,21 @@ a {
   .document-actions .secondary-dashboard-button {
     width: 100%;
   }
+}
+
+
+
+
+
+/* =========================================================
+   Completed / Received action
+========================================================= */
+
+.notion-action-button.portal-checklist-action-received,
+.notion-action-button.portal-checklist-action-received.disabled {
+  border-color: #c7ddcb;
+  background: #eef8f0;
+  color: #567b5d;
+  opacity: 1;
+  cursor: default;
 }

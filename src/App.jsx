@@ -73,6 +73,302 @@ function isTextResponseItem(item) {
   );
 }
 
+async function fetchPortalBookingReference(portalToken) {
+  const cleanedToken = String(portalToken || "").trim();
+
+  if (!cleanedToken) {
+    return {
+      guestCount: "",
+      foodAllergies: "",
+    };
+  }
+
+  const { data, error } = await supabase.rpc(
+    "portal_get_booking_reference",
+    {
+      p_portal_token: cleanedToken,
+    }
+  );
+
+  if (error) {
+    throw error;
+  }
+
+  const reference =
+    data && typeof data === "object"
+      ? data
+      : {};
+
+  return {
+    guestCount: String(
+      reference.guestCount ||
+      reference.guest_count ||
+      ""
+    ).trim(),
+    foodAllergies: String(
+      reference.foodAllergies ||
+      reference.food_allergies ||
+      ""
+    ).trim(),
+  };
+}
+
+function firstNonBlankValue(...values) {
+  return values.find((value) => {
+    if (value === null || value === undefined) {
+      return false;
+    }
+
+    if (Array.isArray(value)) {
+      return value.length > 0;
+    }
+
+    if (typeof value === "object") {
+      return Object.keys(value).length > 0;
+    }
+
+    return String(value).trim().length > 0;
+  });
+}
+
+function formatReferenceValue(value) {
+  if (value === null || value === undefined) {
+    return "";
+  }
+
+  if (Array.isArray(value)) {
+    return value
+      .map((entry) => {
+        if (entry === null || entry === undefined) {
+          return "";
+        }
+
+        if (typeof entry !== "object") {
+          return String(entry).trim();
+        }
+
+        const guestName = String(
+          entry.guestName ||
+          entry.guest_name ||
+          entry.personName ||
+          entry.person_name ||
+          ""
+        ).trim();
+
+        const allergyName = String(
+          entry.allergy ||
+          entry.foodAllergy ||
+          entry.food_allergy ||
+          entry.name ||
+          entry.label ||
+          ""
+        ).trim();
+
+        const count = String(
+          entry.count ||
+          entry.quantity ||
+          ""
+        ).trim();
+
+        if (guestName && allergyName) {
+          return `${guestName} — ${allergyName}`;
+        }
+
+        if (count && allergyName) {
+          return `${count} × ${allergyName}`;
+        }
+
+        return allergyName || guestName;
+      })
+      .filter(Boolean)
+      .join("; ");
+  }
+
+  if (typeof value === "object") {
+    return Object.entries(value)
+      .map(([key, entryValue]) => {
+        const formattedValue = formatReferenceValue(entryValue);
+
+        if (!formattedValue) {
+          return "";
+        }
+
+        const formattedKey = String(key)
+          .replace(/([a-z])([A-Z])/g, "$1 $2")
+          .replace(/_/g, " ")
+          .replace(/\b\w/g, (letter) => letter.toUpperCase());
+
+        return `${formattedKey}: ${formattedValue}`;
+      })
+      .filter(Boolean)
+      .join("; ");
+  }
+
+  return String(value).trim();
+}
+
+function getPortalDatabaseReference(portalRecord, bookingReference, itemId) {
+  const record = portalRecord || {};
+  const secureReference = bookingReference || {};
+  const rawData =
+    record.rawData ||
+    record.raw_data ||
+    {};
+  const details =
+    record.rentalFormDetails ||
+    record.rental_form_details ||
+    rawData.rentalFormDetails ||
+    rawData.rental_form_details ||
+    {};
+
+  if (itemId === "guest-count") {
+    const secureGuestCount = formatReferenceValue(
+      firstNonBlankValue(
+        secureReference.guestCount,
+        secureReference.guest_count
+      )
+    );
+
+    const fullTime = firstNonBlankValue(
+      record.fullTimeGuests,
+      record.full_time_guests,
+      details.fullTimeGuests,
+      details.full_time_guests,
+      details.finalFullTimeGuests,
+      details.final_full_time_guests,
+      details.fullTimeCount,
+      details.full_time_count
+    );
+
+    const partTime = firstNonBlankValue(
+      record.partTimeGuests,
+      record.part_time_guests,
+      details.partTimeGuests,
+      details.part_time_guests,
+      details.finalPartTimeGuests,
+      details.final_part_time_guests,
+      details.partTimeCount,
+      details.part_time_count
+    );
+
+    const dayUse = firstNonBlankValue(
+      record.dayUseGuests,
+      record.day_use_guests,
+      details.dayUseGuests,
+      details.day_use_guests,
+      details.finalDayUseGuests,
+      details.final_day_use_guests,
+      details.dayUseCount,
+      details.day_use_count
+    );
+
+    if (fullTime !== undefined || partTime !== undefined || dayUse !== undefined) {
+      return [
+        fullTime !== undefined ? `Full-time: ${formatReferenceValue(fullTime)}` : "",
+        partTime !== undefined ? `Part-time: ${formatReferenceValue(partTime)}` : "",
+        dayUse !== undefined ? `Day Use: ${formatReferenceValue(dayUse)}` : "",
+      ]
+        .filter(Boolean)
+        .join("; ");
+    }
+
+    if (secureGuestCount) {
+      return /^\d+(?:\.\d+)?$/.test(secureGuestCount)
+        ? `Total guests: ${secureGuestCount}`
+        : secureGuestCount;
+    }
+
+    const actualAdults = firstNonBlankValue(
+      details.actualAdultGuests,
+      details.actual_adult_guests
+    );
+    const actualChildren = firstNonBlankValue(
+      details.actualChildrenGuests,
+      details.actual_children_guests
+    );
+    const childrenUnder3 = firstNonBlankValue(
+      details.actualChildrenUnder3,
+      details.actual_children_under_3
+    );
+    const children3to17 = firstNonBlankValue(
+      details.actualChildren3to17,
+      details.actual_children_3_to_17
+    );
+
+    const actualParts = [
+      actualAdults !== undefined
+        ? `Adults: ${formatReferenceValue(actualAdults)}`
+        : "",
+      actualChildren !== undefined
+        ? `Children: ${formatReferenceValue(actualChildren)}`
+        : "",
+      childrenUnder3 !== undefined
+        ? `Children under 3: ${formatReferenceValue(childrenUnder3)}`
+        : "",
+      children3to17 !== undefined
+        ? `Children 3–17: ${formatReferenceValue(children3to17)}`
+        : "",
+    ].filter(Boolean);
+
+    if (actualParts.length > 0) {
+      return actualParts.join("; ");
+    }
+
+    return formatReferenceValue(
+      firstNonBlankValue(
+        record.actualGuestCount,
+        record.actual_guest_count,
+        record.attendeeCount,
+        record.attendee_count,
+        record.guestCount,
+        record.guest_count,
+        details.actualTotalGuests,
+        details.actual_total_guests,
+        details.approxTotalGuests,
+        details.approx_total_guests
+      )
+    );
+  }
+
+  if (itemId === "food-allergy-information") {
+    const allergyValue = firstNonBlankValue(
+      secureReference.foodAllergies,
+      secureReference.food_allergies,
+      record.foodAllergies,
+      record.food_allergies,
+      record.allergyInformation,
+      record.allergy_information,
+      record.allergies,
+      rawData.foodAllergies,
+      rawData.food_allergies,
+      rawData.allergies,
+      details.foodAllergies,
+      details.food_allergies,
+      details.allergyInformation,
+      details.allergy_information,
+      details.allergies
+    );
+
+    const formattedAllergies = formatReferenceValue(allergyValue);
+    const allergyNotes = formatReferenceValue(
+      firstNonBlankValue(
+        record.allergyNotes,
+        record.allergy_notes,
+        rawData.allergyNotes,
+        rawData.allergy_notes,
+        details.allergyNotes,
+        details.allergy_notes
+      )
+    );
+
+    return [formattedAllergies, allergyNotes]
+      .filter(Boolean)
+      .join("; ");
+  }
+
+  return "";
+}
+
 async function fetchPortalChecklistItemResponse(portalToken, itemId) {
   const cleanedToken = String(portalToken || "").trim();
   const cleanedItemId = String(itemId || "").trim();
@@ -294,6 +590,10 @@ export default function App() {
     const [isLoadingPortal, setIsLoadingPortal] = useState(true);
     const [portalError, setPortalError] = useState("");
     const [savingItemId, setSavingItemId] = useState("");
+    const [bookingReference, setBookingReference] = useState({
+        guestCount: "",
+        foodAllergies: "",
+    });
     const checklistItems = portalRecord?.checklistItems || [];
     const documents = portalRecord?.documents || [];
     useEffect(() => {
@@ -307,10 +607,26 @@ export default function App() {
             try {
                 setIsLoadingPortal(true);
                 setPortalError("");
-                const record = await fetchPortalRecord(portalToken);
+                const [record, currentReference] = await Promise.all([
+                    fetchPortalRecord(portalToken),
+                    fetchPortalBookingReference(portalToken).catch((error) => {
+                        console.error(
+                            "Could not load current booking reference information:",
+                            error
+                        );
+
+                        return {
+                            guestCount: "",
+                            foodAllergies: "",
+                        };
+                    }),
+                ]);
+
                 if (!isMounted) {
                     return;
                 }
+
+                setBookingReference(currentReference);
                 if (!record) {
                     setPortalRecord(null);
                     setPortalError("This portal link is invalid or has expired.");
@@ -445,7 +761,7 @@ export default function App() {
       <section className="portal-main">
         <PortalHeader portalRecord={portalRecord} progress={progress} activeTab={activeTab} setActiveTab={setActiveTab} documentCount={documents.length}/>
         <PortalNotice portalToken={portalToken}/>
-        {activeTab === "checklist" ? (<ChecklistTab portalToken={portalToken} portalRecord={portalRecord} checklistItems={checklistItems} onUpload={handleUpload} onMarkReady={handleMarkReady} onUnmarkReady={handleUnmarkReady} onSubmitTextResponse={handleSubmitTextResponse} savingItemId={savingItemId}/>) : (<DocumentsTab documents={documents}/>)}
+        {activeTab === "checklist" ? (<ChecklistTab portalToken={portalToken} portalRecord={portalRecord} bookingReference={bookingReference} checklistItems={checklistItems} onUpload={handleUpload} onMarkReady={handleMarkReady} onUnmarkReady={handleUnmarkReady} onSubmitTextResponse={handleSubmitTextResponse} savingItemId={savingItemId}/>) : (<DocumentsTab documents={documents}/>)}
       </section>
     </main>);
 }
@@ -609,7 +925,7 @@ function PortalNotice({ portalToken }) {
     </section>);
 }
 
-function ChecklistTab({ portalToken, portalRecord, checklistItems, onUpload, onMarkReady, onUnmarkReady, onSubmitTextResponse, savingItemId, }) {
+function ChecklistTab({ portalToken, portalRecord, bookingReference, checklistItems, onUpload, onMarkReady, onUnmarkReady, onSubmitTextResponse, savingItemId, }) {
     return (<section className="dashboard-card notion-checklist-panel">
       <div className="notion-checklist-header">
         <div>
@@ -639,6 +955,8 @@ function ChecklistTab({ portalToken, portalRecord, checklistItems, onUpload, onM
               key={item.id}
               item={item}
               portalToken={portalToken}
+              portalRecord={portalRecord}
+              bookingReference={bookingReference}
               onUpload={onUpload}
               onMarkReady={onMarkReady}
               onUnmarkReady={onUnmarkReady}
@@ -651,7 +969,7 @@ function ChecklistTab({ portalToken, portalRecord, checklistItems, onUpload, onM
     </section>);
 }
 
-function ChecklistItemCard({ item, portalToken, onUpload, onMarkReady, onUnmarkReady, onSubmitTextResponse, isSaving }) {
+function ChecklistItemCard({ item, portalToken, portalRecord, bookingReference, onUpload, onMarkReady, onUnmarkReady, onSubmitTextResponse, isSaving }) {
     const statusInfo = getStatusInfo(item.status);
     const inputId = `upload-${item.id}`;
     const isCompleted = item.status === "completed";
@@ -662,6 +980,12 @@ function ChecklistItemCard({ item, portalToken, onUpload, onMarkReady, onUnmarkR
     const isTextResponseTask = isTextResponseItem(item);
     const canUnsubmit = isGuestCount && isInReview;
     const isUploadLocked = isCompleted || isInReview;
+    const databaseReference = getPortalDatabaseReference(
+        portalRecord,
+        bookingReference,
+        item.id
+    );
+    const hasDatabaseReference = String(databaseReference || "").trim().length > 0;
 
     const [isDetailsOpen, setIsDetailsOpen] = useState(false);
     const [responseText, setResponseText] = useState("");
@@ -712,6 +1036,7 @@ function ChecklistItemCard({ item, portalToken, onUpload, onMarkReady, onUnmarkR
     }, [isTextResponseTask, item.id, portalToken]);
 
     const hasResponseText = String(responseText || "").trim().length > 0;
+    const hasConfirmableText = hasResponseText || hasDatabaseReference;
     const responseIsLocked = isCompleted || isInReview;
 
     function getShortStatusLabel() {
@@ -741,7 +1066,7 @@ function ChecklistItemCard({ item, portalToken, onUpload, onMarkReady, onUnmarkR
             return "Staff Updates";
         }
         if (isTextResponseTask) {
-            return hasResponseText ? "Confirm" : "Add Info";
+            return hasConfirmableText ? "Confirm" : "Add Info";
         }
         if (isGuestCount) {
             return "Submit";
@@ -759,14 +1084,19 @@ function ChecklistItemCard({ item, portalToken, onUpload, onMarkReady, onUnmarkR
         }
 
         if (isTextResponseTask) {
-            if (!hasResponseText) {
+            const responseToSubmit = String(
+                hasResponseText ? responseText : databaseReference
+            ).trim();
+
+            if (!responseToSubmit) {
                 setIsDetailsOpen(true);
                 return;
             }
 
-            const didSubmit = await onSubmitTextResponse(item, responseText);
+            const didSubmit = await onSubmitTextResponse(item, responseToSubmit);
 
             if (didSubmit) {
+                setResponseText(responseToSubmit);
                 setIsDetailsOpen(true);
             }
 
@@ -811,7 +1141,7 @@ function ChecklistItemCard({ item, portalToken, onUpload, onMarkReady, onUnmarkR
       <div className="notion-file-cell">
         {isTextResponseTask ? (
           <button
-            className={`notion-info-toggle ${hasResponseText ? "has-info" : ""}`}
+            className={`notion-info-toggle ${hasConfirmableText ? "has-info" : ""}`}
             type="button"
             disabled={isResponseLoading}
             aria-expanded={isDetailsOpen}
@@ -821,7 +1151,7 @@ function ChecklistItemCard({ item, portalToken, onUpload, onMarkReady, onUnmarkR
               ? "Loading..."
               : isDetailsOpen
                 ? "Hide Info"
-                : hasResponseText
+                : hasConfirmableText
                   ? "View Info"
                   : "Add Info"}
           </button>
@@ -839,9 +1169,16 @@ function ChecklistItemCard({ item, portalToken, onUpload, onMarkReady, onUnmarkR
                 ? "Unsubmitting..."
                 : "Confirming..."
             : getActionLabel()}
-        </button>) : (<label className={isUploadLocked || !isUploadItem
-            ? "secondary-dashboard-button notion-action-button disabled"
-            : "primary-dashboard-button notion-action-button"} htmlFor={isUploadLocked || !isUploadItem ? undefined : inputId}>
+        </button>) : (<label
+          className={
+            isUploadLocked || !isUploadItem
+              ? `secondary-dashboard-button notion-action-button disabled ${
+                  isCompleted ? "portal-checklist-action-received" : ""
+                }`
+              : "primary-dashboard-button notion-action-button"
+          }
+          htmlFor={isUploadLocked || !isUploadItem ? undefined : inputId}
+        >
           {getActionLabel()}
         </label>)}
       </div>
@@ -854,7 +1191,11 @@ function ChecklistItemCard({ item, portalToken, onUpload, onMarkReady, onUnmarkR
                 {item.id === "guest-count" ? "Final guest counts" : "Food allergy information"}
               </span>
               <strong>
-                {hasResponseText ? "Current information" : "Add information for staff"}
+                {hasResponseText
+                  ? "Your saved response"
+                  : hasDatabaseReference
+                    ? "Review what is currently on file"
+                    : "Add information for staff"}
               </strong>
             </div>
 
@@ -871,29 +1212,57 @@ function ChecklistItemCard({ item, portalToken, onUpload, onMarkReady, onUnmarkR
             )}
           </div>
 
-          {responseError ? (
+          {responseError && (
             <div className="notion-response-error">
               {responseError}
             </div>
-          ) : item.id === "guest-count" ? (
+          )}
+
+          <div className={`notion-current-reference ${hasDatabaseReference ? "" : "empty"}`}>
+            <div className="notion-current-reference-heading">
+              <div>
+                <span>Currently on file</span>
+                <small>From the current booking record</small>
+              </div>
+              <span className="notion-current-reference-badge">Read only</span>
+            </div>
+
+            <div className="notion-current-reference-value">
+              {hasDatabaseReference
+                ? databaseReference
+                : item.id === "guest-count"
+                  ? "No guest-count information is currently saved on the booking."
+                  : "No food-allergy information is currently saved on the booking."}
+            </div>
+          </div>
+
+          {item.id === "guest-count" ? (
             <label className="notion-response-field">
-              <span>Full-time, part-time, and Day Use counts</span>
+              <span>Your confirmation or correction</span>
               <input
                 type="text"
                 value={responseText}
                 disabled={responseIsLocked || isSaving}
-                placeholder="Example: 38 full-time, 6 part-time, 4 Day Use"
+                placeholder={
+                  hasDatabaseReference
+                    ? "If the information above is not accurate, update it here."
+                    : "Please enter the final guest counts (full-time, part-time, Day Use)."
+                }
                 onChange={(event) => setResponseText(event.target.value)}
               />
             </label>
           ) : (
             <label className="notion-response-field">
-              <span>Guest names and specific food allergies</span>
+              <span>Your confirmation or correction</span>
               <textarea
                 rows="4"
                 value={responseText}
                 disabled={responseIsLocked || isSaving}
-                placeholder="Example: Sam — peanut allergy; Taylor — gluten-free"
+                placeholder={
+                  hasDatabaseReference
+                    ? "If the information above is not accurate, update it here."
+                    : "Please enter each guest's name and specific food allergy. If there are none, enter 'None'."
+                }
                 onChange={(event) => setResponseText(event.target.value)}
               />
             </label>
@@ -906,8 +1275,10 @@ function ChecklistItemCard({ item, portalToken, onUpload, onMarkReady, onUnmarkR
                   ? "Staff has confirmed this information."
                   : "Unsubmit this task if you need to edit the information before staff confirms it."
                 : hasResponseText
-                  ? "Click Confirm in the Action column when this information is ready for staff review."
-                  : "Enter the information above before confirming this task."}
+                  ? "Click Confirm in the Action column when your updated information is ready for staff review."
+                  : hasDatabaseReference
+                    ? "If the information on file is correct, click Confirm. If not, enter the corrected information above first."
+                    : "Please enter the requested information above before confirming this task."}
             </span>
           </div>
         </div>
