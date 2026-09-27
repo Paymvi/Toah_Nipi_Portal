@@ -1,4 +1,5 @@
 @import url("https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;500;600;700&display=swap");
+
 * {
   box-sizing: border-box;
 }
@@ -926,6 +927,18 @@ a {
   min-width: 96px;
   min-height: 27px;
   font-size: 0.66rem;
+}
+
+.notion-action-button-unsubmit {
+  border-color: #e1bcbc;
+  background: #fffafa;
+  color: #8f3b3b;
+}
+
+.notion-action-button-unsubmit:hover:not(:disabled) {
+  border-color: #d5a7a7;
+  background: #fff2f2;
+  color: #7f3030;
 }
 
 .notion-action-button.disabled {

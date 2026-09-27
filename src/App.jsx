@@ -5,6 +5,7 @@ import "./App.css";
 import {
   fetchPortalRecord,
   markPortalItemReady,
+  unmarkPortalItemReady,
 } from "./services/portalService";
 
 /*
@@ -295,6 +296,24 @@ export default function App() {
             setSavingItemId("");
         }
     }
+    async function handleUnmarkReady(item) {
+        try {
+            setSavingItemId(item.id);
+            const updatedRecord = await unmarkPortalItemReady(portalToken, item.id);
+            if (!updatedRecord) {
+                alert("Could not unsubmit this item. Please contact Toah Nipi staff.");
+                return;
+            }
+            setPortalRecord(updatedRecord);
+        }
+        catch (error) {
+            console.error("Could not unsubmit portal checklist item:", error);
+            alert("Could not unsubmit this item. Please try again or contact staff.");
+        }
+        finally {
+            setSavingItemId("");
+        }
+    }
     if (isLoadingPortal) {
         return (<main className="portal-shell">
         <section className="portal-main">
@@ -328,7 +347,7 @@ export default function App() {
       <section className="portal-main">
         <PortalHeader portalRecord={portalRecord} progress={progress} activeTab={activeTab} setActiveTab={setActiveTab} documentCount={documents.length}/>
         <PortalNotice portalToken={portalToken}/>
-        {activeTab === "checklist" ? (<ChecklistTab portalRecord={portalRecord} checklistItems={checklistItems} onUpload={handleUpload} onMarkReady={handleMarkReady} savingItemId={savingItemId}/>) : (<DocumentsTab documents={documents}/>)}
+        {activeTab === "checklist" ? (<ChecklistTab portalRecord={portalRecord} checklistItems={checklistItems} onUpload={handleUpload} onMarkReady={handleMarkReady} onUnmarkReady={handleUnmarkReady} savingItemId={savingItemId}/>) : (<DocumentsTab documents={documents}/>)}
       </section>
     </main>);
 }
@@ -492,7 +511,7 @@ function PortalNotice({ portalToken }) {
     </section>);
 }
 
-function ChecklistTab({ portalRecord, checklistItems, onUpload, onMarkReady, savingItemId, }) {
+function ChecklistTab({ portalRecord, checklistItems, onUpload, onMarkReady, onUnmarkReady, savingItemId, }) {
     return (<section className="dashboard-card notion-checklist-panel">
       <div className="notion-checklist-header">
         <div>
@@ -517,24 +536,27 @@ function ChecklistTab({ portalRecord, checklistItems, onUpload, onMarkReady, sav
           <span>Action</span>
         </div>
         <div className="notion-table-body">
-          {checklistItems.map((item) => (<ChecklistItemCard key={item.id} item={item} onUpload={onUpload} onMarkReady={onMarkReady} isSaving={savingItemId === item.id}/>))}
+          {checklistItems.map((item) => (<ChecklistItemCard key={item.id} item={item} onUpload={onUpload} onMarkReady={onMarkReady} onUnmarkReady={onUnmarkReady} isSaving={savingItemId === item.id}/>))}
         </div>
       </div>
     </section>);
 }
 
-function ChecklistItemCard({ item, onUpload, onMarkReady, isSaving }) {
+function ChecklistItemCard({ item, onUpload, onMarkReady, onUnmarkReady, isSaving }) {
     const statusInfo = getStatusInfo(item.status);
     const inputId = `upload-${item.id}`;
-    const isLocked = item.status === "completed" || item.status === "needsReview";
+    const isCompleted = item.status === "completed";
+    const isInReview = item.status === "needsReview";
     const isStaffOnly = item.guestAction === "none";
     const isGuestCount = item.guestAction === "mark_ready";
     const isUploadItem = item.guestAction === "upload_file";
+    const canUnsubmit = isGuestCount && isInReview;
+    const isUploadLocked = isCompleted || isInReview;
     function getShortStatusLabel() {
-        if (item.status === "completed") {
+        if (isCompleted) {
             return "Complete";
         }
-        if (item.status === "needsReview") {
+        if (isInReview) {
             return "In Review";
         }
         if (item.status === "waitingOnGuest") {
@@ -543,10 +565,13 @@ function ChecklistItemCard({ item, onUpload, onMarkReady, isSaving }) {
         return "Not Started";
     }
     function getActionLabel() {
-        if (item.status === "completed") {
+        if (isCompleted) {
             return "Received";
         }
-        if (item.status === "needsReview") {
+        if (canUnsubmit) {
+            return "Unsubmit";
+        }
+        if (isInReview) {
             return "Submitted";
         }
         if (isStaffOnly) {
@@ -560,15 +585,19 @@ function ChecklistItemCard({ item, onUpload, onMarkReady, isSaving }) {
         }
         return "No Action";
     }
-    function handleGuestCountSubmit() {
+    function handleGuestCountAction() {
+        if (canUnsubmit) {
+            onUnmarkReady(item);
+            return;
+        }
         onMarkReady(item);
     }
     return (<article className="notion-table-row">
       <div className="notion-task-cell">
         <div className={`notion-task-icon ${statusInfo.className}`}>
-          {item.status === "completed"
+          {isCompleted
             ? "✓"
-            : item.status === "needsReview"
+            : isInReview
                 ? "…"
                 : ""}
         </div>
@@ -597,14 +626,18 @@ function ChecklistItemCard({ item, onUpload, onMarkReady, isSaving }) {
         </span>
       </div>
       <div className="notion-action-cell">
-        <input id={inputId} className="hidden-file-input" type="file" disabled={isLocked || !isUploadItem} onChange={(event) => onUpload(item, event.target.files?.[0])}/>
-        {isGuestCount && !isLocked ? (<button className="secondary-dashboard-button notion-action-button" type="button" disabled={isSaving} onClick={handleGuestCountSubmit}>
-            {isSaving ? "Submitting..." : getActionLabel()}
-          </button>) : (<label className={isLocked || !isUploadItem
-                ? "secondary-dashboard-button notion-action-button disabled"
-                : "primary-dashboard-button notion-action-button"} htmlFor={isLocked || !isUploadItem ? undefined : inputId}>
-            {getActionLabel()}
-          </label>)}
+        <input id={inputId} className="hidden-file-input" type="file" disabled={isUploadLocked || !isUploadItem} onChange={(event) => onUpload(item, event.target.files?.[0])}/>
+        {isGuestCount && !isCompleted ? (<button className={`secondary-dashboard-button notion-action-button ${canUnsubmit ? "notion-action-button-unsubmit" : ""}`} type="button" disabled={isSaving} onClick={handleGuestCountAction}>
+          {isSaving
+            ? canUnsubmit
+                ? "Unsubmitting..."
+                : "Submitting..."
+            : getActionLabel()}
+        </button>) : (<label className={isUploadLocked || !isUploadItem
+            ? "secondary-dashboard-button notion-action-button disabled"
+            : "primary-dashboard-button notion-action-button"} htmlFor={isUploadLocked || !isUploadItem ? undefined : inputId}>
+          {getActionLabel()}
+        </label>)}
       </div>
     </article>);
 }
