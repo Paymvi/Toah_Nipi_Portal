@@ -1697,6 +1697,177 @@ a {
 
 
 /* =========================================================
+   Retreat feedback
+========================================================= */
+
+.portal-feedback-card {
+  position: relative;
+
+  margin-top: 14px;
+  padding: 16px 18px;
+
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+
+  border-left: 3px solid var(--purple);
+
+  background:
+    linear-gradient(
+      135deg,
+      #ffffff 0%,
+      #fdfcff 62%,
+      #f5f2ff 100%
+    );
+}
+
+.portal-feedback-card::after {
+  content: "";
+
+  position: absolute;
+  right: -54px;
+  bottom: -76px;
+
+  width: 150px;
+  height: 150px;
+
+  border-radius: 50%;
+
+  background: rgba(91, 67, 196, 0.055);
+
+  pointer-events: none;
+}
+
+.portal-feedback-icon {
+  position: relative;
+  z-index: 1;
+
+  width: 42px;
+  height: 42px;
+
+  display: grid;
+  place-items: center;
+
+  border: 1px solid #ddd7f4;
+  border-radius: 10px;
+
+  background: #f1eeff;
+  color: var(--purple);
+}
+
+.portal-feedback-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.portal-feedback-content {
+  position: relative;
+  z-index: 1;
+
+  min-width: 0;
+}
+
+.portal-feedback-content .dashboard-eyebrow {
+  margin-bottom: 3px;
+}
+
+.portal-feedback-content h2 {
+  margin: 0;
+
+  color: var(--text-main);
+
+  font-family: var(--font-heading);
+  font-size: 0.96rem;
+  font-weight: 700;
+
+  line-height: 1.25;
+  letter-spacing: -0.015em;
+}
+
+.portal-feedback-content > p:last-child {
+  max-width: 690px;
+
+  margin: 4px 0 0;
+
+  color: var(--text-muted);
+
+  font-size: 0.71rem;
+  line-height: 1.45;
+}
+
+.portal-feedback-action {
+  position: relative;
+  z-index: 1;
+
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 5px;
+}
+
+.portal-feedback-button {
+  min-height: 34px;
+  padding: 0 13px;
+}
+
+.portal-feedback-arrow {
+  margin-left: 1px;
+
+  font-size: 0.78rem;
+  line-height: 1;
+}
+
+.portal-feedback-note {
+  color: #969caf;
+
+  font-size: 0.58rem;
+  font-weight: 500;
+
+  white-space: nowrap;
+}
+
+@media (max-width: 700px) {
+  .portal-feedback-card {
+    grid-template-columns: 38px minmax(0, 1fr);
+    align-items: start;
+
+    padding: 14px;
+  }
+
+  .portal-feedback-icon {
+    width: 38px;
+    height: 38px;
+
+    border-radius: 9px;
+  }
+
+  .portal-feedback-icon svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .portal-feedback-action {
+    grid-column: 1 / -1;
+
+    width: 100%;
+
+    align-items: stretch;
+
+    margin-top: 2px;
+  }
+
+  .portal-feedback-button {
+    width: 100%;
+  }
+
+  .portal-feedback-note {
+    text-align: center;
+  }
+}
+
+
+/* =========================================================
    Completed / Received action
 ========================================================= */
 

@@ -67,6 +67,8 @@ const TEXT_RESPONSE_ITEM_IDS = new Set([
   "guest-count",
 ]);
 
+const FEEDBACK_FORM_URL = "https://forms.gle/rmvSw7x5Lpc8ZAog7";
+
 function isTextResponseItem(item) {
   return TEXT_RESPONSE_ITEM_IDS.has(
     String(item?.id || "").trim()
@@ -762,6 +764,8 @@ export default function App() {
         <PortalHeader portalRecord={portalRecord} progress={progress} activeTab={activeTab} setActiveTab={setActiveTab} documentCount={documents.length}/>
         <PortalNotice portalToken={portalToken}/>
         {activeTab === "checklist" ? (<ChecklistTab portalToken={portalToken} portalRecord={portalRecord} bookingReference={bookingReference} checklistItems={checklistItems} onUpload={handleUpload} onMarkReady={handleMarkReady} onUnmarkReady={handleUnmarkReady} onSubmitTextResponse={handleSubmitTextResponse} savingItemId={savingItemId}/>) : (<DocumentsTab documents={documents}/>)}
+
+        <FeedbackCard />
       </section>
     </main>);
 }
@@ -911,7 +915,52 @@ function PortalIcon({ type }) {
         <path d="M14 2v6h6M8 13h8M8 17h6"/>
       </svg>);
     }
+    if (type === "feedback") {
+        return (<svg {...commonProps}>
+        <path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4v8Z"/>
+        <path d="M8 9h8M8 13h5"/>
+      </svg>);
+    }
     return null;
+}
+
+function FeedbackCard() {
+    return (
+      <section
+        className="dashboard-card portal-feedback-card"
+        aria-labelledby="portal-feedback-title"
+      >
+        <div className="portal-feedback-icon" aria-hidden="true">
+          <PortalIcon type="feedback"/>
+        </div>
+
+        <div className="portal-feedback-content">
+          <p className="dashboard-eyebrow">Retreat Feedback</p>
+          <h2 id="portal-feedback-title">Tell us about your stay</h2>
+          <p>
+            After your retreat, we would love to hear about your experience at
+            Toah Nipi. Your feedback helps us celebrate what went well and make
+            future retreats even better.
+          </p>
+        </div>
+
+        <div className="portal-feedback-action">
+          <a
+            className="primary-dashboard-button portal-feedback-button"
+            href={FEEDBACK_FORM_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <span>Open Feedback Form</span>
+            <span className="portal-feedback-arrow" aria-hidden="true">↗</span>
+          </a>
+
+          <span className="portal-feedback-note">
+            Opens in a new tab
+          </span>
+        </div>
+      </section>
+    );
 }
 
 function PortalNotice({ portalToken }) {
