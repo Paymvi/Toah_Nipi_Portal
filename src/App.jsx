@@ -69,6 +69,86 @@ const TEXT_RESPONSE_ITEM_IDS = new Set([
 
 const FEEDBACK_FORM_URL = "https://forms.gle/rmvSw7x5Lpc8ZAog7";
 
+const PORTAL_UPLOAD_BUCKET = "portal-uploads";
+const PORTAL_UPLOAD_MAX_BYTES = 10 * 1024 * 1024;
+
+const PORTAL_UPLOAD_MIME_BY_EXTENSION = {
+  pdf: "application/pdf",
+  doc: "application/msword",
+  docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  xls: "application/vnd.ms-excel",
+  xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  png: "image/png",
+  jpg: "image/jpeg",
+  jpeg: "image/jpeg",
+};
+
+const PORTAL_UPLOAD_ACCEPT = Object.keys(PORTAL_UPLOAD_MIME_BY_EXTENSION)
+  .map((extension) => `.${extension}`)
+  .join(",");
+
+function getPortalUploadExtension(fileName) {
+  return String(fileName || "")
+    .trim()
+    .toLowerCase()
+    .split(".")
+    .pop();
+}
+
+function getPortalUploadMimeType(file) {
+  const browserMimeType = String(file?.type || "").trim().toLowerCase();
+  const extension = getPortalUploadExtension(file?.name);
+  const inferredMimeType = PORTAL_UPLOAD_MIME_BY_EXTENSION[extension] || "";
+
+  if (browserMimeType && Object.values(PORTAL_UPLOAD_MIME_BY_EXTENSION).includes(browserMimeType)) {
+    return browserMimeType;
+  }
+
+  return inferredMimeType;
+}
+
+function sanitizePortalUploadFileName(fileName) {
+  const cleanedName = String(fileName || "upload")
+    .trim()
+    .replace(/[\/\\]+/g, "-")
+    .replace(/[^a-zA-Z0-9._() -]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+    .slice(0, 140);
+
+  return cleanedName || "upload";
+}
+
+function makePortalUploadId() {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+
+  return `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
+function validatePortalUpload(file) {
+  if (!file) {
+    return "Choose a file to upload.";
+  }
+
+  if (file.size <= 0) {
+    return "That file is empty. Please choose a different file.";
+  }
+
+  if (file.size > PORTAL_UPLOAD_MAX_BYTES) {
+    return "That file is larger than 10 MB. Please choose a smaller file.";
+  }
+
+  const mimeType = getPortalUploadMimeType(file);
+
+  if (!mimeType) {
+    return "Please upload a PDF, Word document, Excel file, PNG, or JPG.";
+  }
+
+  return "";
+}
+
 function isTextResponseItem(item) {
   return TEXT_RESPONSE_ITEM_IDS.has(
     String(item?.id || "").trim()
@@ -423,6 +503,67 @@ async function submitPortalChecklistItemResponse(
   return data;
 }
 
+async function submitPortalChecklistUpload(portalToken, item, file) {
+  const cleanedToken = String(portalToken || "").trim();
+  const cleanedItemId = String(item?.id || "").trim();
+  const validationError = validatePortalUpload(file);
+
+  if (!cleanedToken || !cleanedItemId) {
+    throw new Error("This portal link or checklist item is missing required information.");
+  }
+
+  if (cleanedToken.includes("/") || cleanedItemId.includes("/")) {
+    throw new Error("This portal link contains an invalid upload path.");
+  }
+
+  if (validationError) {
+    throw new Error(validationError);
+  }
+
+  const mimeType = getPortalUploadMimeType(file);
+  const safeFileName = sanitizePortalUploadFileName(file.name);
+  const storagePath = `${cleanedToken}/${cleanedItemId}/${makePortalUploadId()}-${safeFileName}`;
+
+  const { error: uploadError } = await supabase.storage
+    .from(PORTAL_UPLOAD_BUCKET)
+    .upload(storagePath, file, {
+      cacheControl: "3600",
+      contentType: mimeType,
+      upsert: false,
+    });
+
+  if (uploadError) {
+    throw uploadError;
+  }
+
+  const { error: registerError } = await supabase.rpc(
+    "portal_submit_checklist_upload",
+    {
+      p_portal_token: cleanedToken,
+      p_item_id: cleanedItemId,
+      p_file_name: String(file.name || safeFileName).trim(),
+      p_storage_path: storagePath,
+      p_mime_type: mimeType,
+      p_file_size: file.size,
+    }
+  );
+
+  if (registerError) {
+    try {
+      await supabase.storage
+        .from(PORTAL_UPLOAD_BUCKET)
+        .remove([storagePath]);
+    }
+    catch (cleanupError) {
+      console.error("Could not clean up failed portal upload:", cleanupError);
+    }
+
+    throw registerError;
+  }
+
+  return storagePath;
+}
+
 // const PORTAL_RECORDS = {
 //   "oak-hill-youth": {
 //     id: "booking-001",
@@ -655,11 +796,40 @@ export default function App() {
         };
     }, [portalToken]);
     const progress = useMemo(() => getChecklistProgress(checklistItems), [checklistItems]);
-    function handleUpload(item, file) {
+    async function handleUpload(item, file) {
         if (!file) {
-            return;
+            return false;
         }
-        alert("File uploads are not connected yet. Next step: connect Supabase Storage for portal documents.");
+
+        try {
+            setSavingItemId(item.id);
+
+            await submitPortalChecklistUpload(
+                portalToken,
+                item,
+                file
+            );
+
+            const updatedRecord = await fetchPortalRecord(portalToken);
+
+            if (!updatedRecord) {
+                throw new Error("The file was uploaded, but the portal could not refresh.");
+            }
+
+            setPortalRecord(updatedRecord);
+            return true;
+        }
+        catch (error) {
+            console.error("Could not upload portal checklist file:", error);
+            alert(
+                error?.message ||
+                "Could not upload this file. Please try again or contact Toah Nipi staff."
+            );
+            return false;
+        }
+        finally {
+            setSavingItemId("");
+        }
     }
     async function handleMarkReady(item) {
         try {
@@ -1029,6 +1199,7 @@ function ChecklistItemCard({ item, portalToken, portalRecord, bookingReference, 
     const isTextResponseTask = isTextResponseItem(item);
     const canUnsubmit = isGuestCount && isInReview;
     const isUploadLocked = isCompleted || isInReview;
+    const isUploadBusy = isUploadItem && isSaving;
     const databaseReference = getPortalDatabaseReference(
         portalRecord,
         bookingReference,
@@ -1124,6 +1295,10 @@ function ChecklistItemCard({ item, portalToken, portalRecord, bookingReference, 
             return "Confirm";
         }
         if (isUploadItem) {
+            if (isUploadBusy) {
+                return "Uploading...";
+            }
+
             return item.id === "contract" ? "Upload Signed File" : "Upload File";
         }
         return "No Action";
@@ -1208,9 +1383,22 @@ function ChecklistItemCard({ item, portalToken, portalRecord, bookingReference, 
                   : "Add Info"}
           </button>
         ) : isUploadItem ? (
-          <span className={item.uploadedFileName ? "has-file" : ""}>
-            {item.uploadedFileName || "No upload yet"}
-          </span>
+          item.uploadedFileName ? (
+            <div className="notion-upload-file-detail">
+              <span className="has-file" title={item.uploadedFileName}>
+                {item.uploadedFileName}
+              </span>
+              <small>
+                {isInReview
+                  ? "Sent for staff review"
+                  : isCompleted
+                    ? "Received by staff"
+                    : "Uploaded"}
+              </small>
+            </div>
+          ) : (
+            <span className="notion-no-upload">No upload yet</span>
+          )
         ) : isGuestCount ? (
           <span>Confirmation only</span>
         ) : isStaffOnly ? (
@@ -1220,16 +1408,36 @@ function ChecklistItemCard({ item, portalToken, portalRecord, bookingReference, 
         )}
       </div>
       <div className="notion-action-cell">
-        <input id={inputId} className="hidden-file-input" type="file" disabled={isUploadLocked || !isUploadItem} onChange={(event) => onUpload(item, event.target.files?.[0])}/>
+        <input
+          id={inputId}
+          className="hidden-file-input"
+          type="file"
+          accept={PORTAL_UPLOAD_ACCEPT}
+          disabled={isUploadLocked || !isUploadItem || isUploadBusy}
+          onChange={async (event) => {
+            const input = event.currentTarget;
+            const selectedFile = input.files?.[0];
+
+            input.value = "";
+
+            if (selectedFile) {
+              await onUpload(item, selectedFile);
+            }
+          }}
+        />
         {isGuestCount && !isCompleted ? (<button className={`secondary-dashboard-button notion-action-button ${canUnsubmit ? "notion-action-button-unsubmit" : ""}`} type="button" disabled={isSaving || isResponseLoading} onClick={handleGuestCountAction}>
           {isSaving
             ? canUnsubmit
                 ? "Unconfirming..."
                 : "Confirming..."
             : getActionLabel()}
-        </button>) : (<label className={isUploadLocked || !isUploadItem
-            ? `secondary-dashboard-button notion-action-button disabled ${isCompleted ? "portal-checklist-action-received" : ""}`
-            : "primary-dashboard-button notion-action-button"} htmlFor={isUploadLocked || !isUploadItem ? undefined : inputId}>
+        </button>) : (<label
+          className={isUploadLocked || !isUploadItem || isUploadBusy
+            ? `secondary-dashboard-button notion-action-button disabled ${isCompleted ? "portal-checklist-action-received" : ""} ${isUploadBusy ? "notion-action-button-uploading" : ""}`
+            : "primary-dashboard-button notion-action-button"}
+          htmlFor={isUploadLocked || !isUploadItem || isUploadBusy ? undefined : inputId}
+          aria-busy={isUploadBusy ? "true" : undefined}
+        >
           {getActionLabel()}
         </label>)}
       </div>

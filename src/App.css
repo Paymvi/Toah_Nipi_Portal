@@ -918,6 +918,35 @@ a {
   color: var(--blue);
 }
 
+
+.notion-upload-file-detail {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.notion-upload-file-detail span.has-file {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--blue);
+  font-weight: 700;
+}
+
+.notion-upload-file-detail small {
+  display: block;
+  color: #6f7687;
+  font-size: 0.58rem;
+  font-weight: 500;
+  line-height: 1.25;
+}
+
+.notion-no-upload {
+  color: var(--text-muted) !important;
+  font-weight: 500 !important;
+}
+
 .notion-action-cell {
   display: flex;
   justify-content: flex-end;
@@ -946,6 +975,13 @@ a {
   opacity: 0.65;
 }
 
+
+.notion-action-button-uploading {
+  border-color: #c9c2ec !important;
+  background: #f7f5ff !important;
+  color: var(--purple) !important;
+  opacity: 0.85 !important;
+}
 
 .notion-info-toggle {
   min-height: 27px;
@@ -1507,7 +1543,6 @@ a {
     width: 100%;
   }
 
-
   .notion-response-panel {
     margin: 2px 0 0;
     padding: 12px;
@@ -1692,10 +1727,6 @@ a {
   }
 }
 
-
-
-
-
 /* =========================================================
    Retreat feedback
 ========================================================= */
@@ -1865,7 +1896,6 @@ a {
     text-align: center;
   }
 }
-
 
 /* =========================================================
    Completed / Received action
