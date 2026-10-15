@@ -70,6 +70,7 @@ const TEXT_RESPONSE_ITEM_IDS = new Set([
 const FEEDBACK_FORM_URL = "https://forms.gle/rmvSw7x5Lpc8ZAog7";
 
 const PORTAL_UPLOAD_BUCKET = "portal-uploads";
+const STAFF_PORTAL_DOCUMENT_FOLDER = "staff-documents";
 const PORTAL_UPLOAD_MAX_BYTES = 10 * 1024 * 1024;
 
 const PORTAL_UPLOAD_MIME_BY_EXTENSION = {
@@ -117,6 +118,24 @@ function sanitizePortalUploadFileName(fileName) {
     .slice(0, 140);
 
   return cleanedName || "upload";
+}
+
+function buildStaffPortalDocumentStoragePath(portalToken, document) {
+  const cleanedToken = String(portalToken || "").trim();
+  const documentId = String(document?.id || "").trim();
+  const fileName = String(document?.fileName || "").trim();
+
+  if (
+    !cleanedToken ||
+    !documentId ||
+    !fileName ||
+    cleanedToken.includes("/") ||
+    documentId.includes("/")
+  ) {
+    return "";
+  }
+
+  return `${cleanedToken}/${STAFF_PORTAL_DOCUMENT_FOLDER}/${documentId}/${sanitizePortalUploadFileName(fileName)}`;
 }
 
 function makePortalUploadId() {
@@ -933,7 +952,7 @@ export default function App() {
       <section className="portal-main">
         <PortalHeader portalRecord={portalRecord} progress={progress} activeTab={activeTab} setActiveTab={setActiveTab} documentCount={documents.length}/>
         <PortalNotice portalToken={portalToken}/>
-        {activeTab === "checklist" ? (<ChecklistTab portalToken={portalToken} portalRecord={portalRecord} bookingReference={bookingReference} checklistItems={checklistItems} onUpload={handleUpload} onMarkReady={handleMarkReady} onUnmarkReady={handleUnmarkReady} onSubmitTextResponse={handleSubmitTextResponse} savingItemId={savingItemId}/>) : (<DocumentsTab documents={documents}/>)}
+        {activeTab === "checklist" ? (<ChecklistTab portalToken={portalToken} portalRecord={portalRecord} bookingReference={bookingReference} checklistItems={checklistItems} onUpload={handleUpload} onMarkReady={handleMarkReady} onUnmarkReady={handleUnmarkReady} onSubmitTextResponse={handleSubmitTextResponse} savingItemId={savingItemId}/>) : (<DocumentsTab documents={documents} portalToken={portalToken}/>)}
 
         <FeedbackCard />
       </section>
@@ -1545,53 +1564,170 @@ function ChecklistItemCard({ item, portalToken, portalRecord, bookingReference, 
     </article>);
 }
 
-function DocumentsTab({ documents }) {
+function DocumentsTab({ documents, portalToken }) {
     return (<section className="dashboard-card portal-panel">
       <div className="portal-panel-header">
         <div>
           <p className="dashboard-eyebrow">Documents</p>
           <h2>Files for this booking</h2>
           <span>
-            This is where contracts, insurance files, schedules, and staff
-            documents will live.
+            Contracts, information sheets, schedules, guest uploads, and files
+            shared directly by Toah Nipi staff all live here.
           </span>
         </div>
       </div>
       <div className="documents-list">
-        {documents.map((document) => (<DocumentCard key={document.id} document={document}/>))}
+        {documents.length > 0 ? (
+          documents.map((document) => (
+            <DocumentCard
+              key={document.id}
+              document={document}
+              portalToken={portalToken}
+            />
+          ))
+        ) : (
+          <div className="documents-empty">
+            No documents have been shared with this booking yet.
+          </div>
+        )}
       </div>
     </section>);
 }
 
-function DocumentCard({ document }) {
+function DocumentCard({ document, portalToken }) {
     const statusInfo =
         getStatusInfo(
             document.status
         );
-    /*
-      Prefer a URL supplied by the backend if one is added later.
-      Otherwise, match document.fileName against the files that Vite
-      bundled from the project-root /documents folder.
-    */
-    const fileUrl =
+
+    const bundledOrProvidedFileUrl =
         document.fileUrl ||
         document.downloadUrl ||
         document.url ||
         getBundledDocumentUrl(
             document.fileName
         );
+
+    const [staffFileUrl, setStaffFileUrl] = useState("");
+    const [isResolvingStaffFile, setIsResolvingStaffFile] = useState(false);
+    const [staffFileError, setStaffFileError] = useState("");
+
+    useEffect(() => {
+        let isMounted = true;
+
+        async function resolveStaffFile() {
+            if (
+                bundledOrProvidedFileUrl ||
+                document.uploadedByGuest ||
+                !portalToken ||
+                !document.id ||
+                !document.fileName
+            ) {
+                setIsResolvingStaffFile(false);
+                setStaffFileError("");
+                setStaffFileUrl("");
+                return;
+            }
+
+            const storagePath =
+                buildStaffPortalDocumentStoragePath(
+                    portalToken,
+                    document
+                );
+
+            if (!storagePath) {
+                setIsResolvingStaffFile(false);
+                return;
+            }
+
+            try {
+                setIsResolvingStaffFile(true);
+                setStaffFileError("");
+
+                const { data, error } = await supabase.storage
+                    .from(PORTAL_UPLOAD_BUCKET)
+                    .createSignedUrl(
+                        storagePath,
+                        10 * 60
+                    );
+
+                if (error) {
+                    throw error;
+                }
+
+                if (!data?.signedUrl) {
+                    throw new Error("Supabase did not return a file URL.");
+                }
+
+                if (isMounted) {
+                    setStaffFileUrl(data.signedUrl);
+                }
+            }
+            catch (error) {
+                if (isMounted) {
+                    setStaffFileUrl("");
+                    setStaffFileError(
+                        error?.message ||
+                        "Could not prepare this file."
+                    );
+                }
+            }
+            finally {
+                if (isMounted) {
+                    setIsResolvingStaffFile(false);
+                }
+            }
+        }
+
+        resolveStaffFile();
+
+        return () => {
+            isMounted = false;
+        };
+    }, [
+        bundledOrProvidedFileUrl,
+        document.id,
+        document.fileName,
+        document.uploadedByGuest,
+        portalToken,
+    ]);
+
+    const fileUrl =
+        bundledOrProvidedFileUrl ||
+        staffFileUrl;
+
     const fileTypeLabel =
         getDocumentTypeLabel(
             document.fileName
         );
+
     const hasFile =
         Boolean(fileUrl);
+
+    const isMissingFile =
+        !hasFile &&
+        !isResolvingStaffFile;
+
+    const documentType =
+        document.type ||
+        document.documentType ||
+        "Document";
+
+    const lastChanged =
+        document.lastChanged ||
+        document.lastChangedAt ||
+        "Recently";
+
+    const note =
+        String(document.note || "")
+            .trim();
+
     return (
         <article
             className={`document-card ${
-                hasFile
-                    ? ""
-                    : "document-card-missing"
+                isMissingFile
+                    ? "document-card-missing"
+                    : ""
             }`}
         >
             <div
@@ -1618,18 +1754,30 @@ function DocumentCard({ document }) {
                 </div>
                 <div className="document-meta-row">
                     <span>
-                        {document.type}
+                        {documentType}
                     </span>
                     <span>
-                        Last changed: {document.lastChanged}
+                        Last changed: {lastChanged}
                     </span>
                 </div>
-                <p className="document-note">
-                    {document.note}
-                </p>
+
+                {note && (
+                    <div className="document-note-callout">
+                        <strong>
+                            Staff note
+                        </strong>
+                        <p>
+                            {note}
+                        </p>
+                    </div>
+                )}
             </div>
             <div className="document-actions">
-                {hasFile ? (
+                {isResolvingStaffFile ? (
+                    <span className="document-file-loading">
+                        Preparing file...
+                    </span>
+                ) : hasFile ? (
                     <>
                         <a
                             className="secondary-dashboard-button"
@@ -1650,7 +1798,10 @@ function DocumentCard({ document }) {
                 ) : (
                     <span
                         className="document-file-missing"
-                        title={`No matching file named "${document.fileName}" was found in the project-root /documents folder.`}
+                        title={
+                            staffFileError ||
+                            `No matching bundled or staff-uploaded file was found for "${document.fileName}".`
+                        }
                     >
                         File not found
                     </span>

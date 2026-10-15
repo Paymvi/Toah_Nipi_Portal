@@ -1909,3 +1909,60 @@ a {
   opacity: 1;
   cursor: default;
 }
+
+
+/* =========================================================
+   Staff-shared custom documents
+========================================================= */
+.documents-empty {
+  padding: 18px;
+  border: 1px dashed #dfe3ed;
+  border-radius: 9px;
+  background: #fafbfe;
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  text-align: center;
+}
+
+.document-note-callout {
+  margin-top: 9px;
+  padding: 9px 10px;
+  border: 1px solid #dedaf3;
+  border-radius: 8px;
+  background: #f8f6ff;
+  box-shadow: inset 3px 0 0 #655ab6;
+}
+
+.document-note-callout strong {
+  display: block;
+  color: #4b4093;
+  font-family: var(--font-heading);
+  font-size: 0.61rem;
+  font-weight: 700;
+  letter-spacing: 0.055em;
+  text-transform: uppercase;
+}
+
+.document-note-callout p {
+  margin: 4px 0 0;
+  color: #555d72;
+  font-size: 0.69rem;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.document-file-loading {
+  min-height: 30px;
+  padding: 0 9px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #d9deea;
+  border-radius: 8px;
+  background: #f8f9fc;
+  color: #71798d;
+  font-size: 0.68rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
