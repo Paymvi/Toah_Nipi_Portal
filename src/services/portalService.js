@@ -64,3 +64,27 @@ export async function unmarkPortalItemReady(portalToken, itemId) {
 
   return data;
 }
+
+/*
+  Online signing (portal-sign Edge Function). The server re-checks the
+  portal token, task and document on every call; this only carries the
+  guest's entries. Errors come back as { error, code } with a message that
+  is safe to show.
+*/
+export async function callPortalSign(body) {
+  const { data, error } = await supabase.functions.invoke("portal-sign", { body });
+
+  if (error) {
+    // The function's { error, code } body, when the request reached it.
+    const payload = await Promise.resolve(error.context?.json?.()).catch(() => null);
+
+    const failure = new Error(
+      payload?.error ||
+      "Could not reach Toah Nipi's signing service. Check your connection and try again. If you already pressed Sign, trying again will not sign twice."
+    );
+    failure.code = payload?.code || "NETWORK";
+    throw failure;
+  }
+
+  return data;
+}

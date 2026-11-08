@@ -1966,3 +1966,219 @@ a {
   font-weight: 600;
   white-space: nowrap;
 }
+
+/* ---------- Online signing ---------- */
+
+.notion-action-cell-stack {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+}
+
+.signing-panel {
+  grid-column: 1 / -1;
+  margin: 10px -4px 2px 27px;
+  padding: 13px 14px;
+  display: grid;
+  gap: 12px;
+  border: 1px solid #e0e3ef;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #fbfbff 0%, #ffffff 100%);
+  box-shadow: inset 3px 0 0 var(--purple);
+}
+
+.signing-panel strong[tabindex="-1"]:focus {
+  outline: none;
+}
+
+.signing-status,
+.signing-document p {
+  margin: 0;
+  color: var(--text-soft);
+  font-size: 0.7rem;
+  line-height: 1.45;
+}
+
+.signing-file-name {
+  color: var(--text-muted);
+  overflow-wrap: anywhere;
+}
+
+.signing-document {
+  display: grid;
+  gap: 8px;
+}
+
+.signing-preview {
+  width: 100%;
+  height: 460px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #f5f6fb;
+}
+
+.signing-form {
+  display: grid;
+  gap: 11px;
+}
+
+.signing-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  color: var(--text-main);
+  font-size: 0.7rem;
+  line-height: 1.45;
+  cursor: pointer;
+}
+
+.signing-check input {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  margin: 1px 0 0;
+  accent-color: var(--purple);
+}
+
+.signing-agreement {
+  padding: 9px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.signing-choice {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.signing-choice legend {
+  width: 100%;
+  margin-bottom: 6px;
+  padding: 0;
+  color: #555e73;
+  font-size: 0.66rem;
+  font-weight: 700;
+}
+
+.signing-typed-preview {
+  min-height: 64px;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  border: 1px dashed #c9cfe0;
+  border-radius: 8px;
+  background: #ffffff;
+  color: var(--text-main);
+  font-family: "Times New Roman", Times, serif;
+  font-size: 1.35rem;
+  font-style: italic;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.signing-pad {
+  display: grid;
+  gap: 6px;
+}
+
+.signing-pad canvas {
+  width: 100%;
+  max-width: 600px;
+  aspect-ratio: 600 / 180;
+  border: 1px dashed #c9cfe0;
+  border-radius: 8px;
+  background: #ffffff;
+  touch-action: none;
+  cursor: crosshair;
+}
+
+.signing-pad-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.signing-pad-footer small {
+  color: var(--text-muted);
+  font-size: 0.62rem;
+}
+
+.signing-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.signing-done {
+  display: grid;
+  gap: 8px;
+  padding: 11px 12px;
+  border: 1px solid #bfe3d2;
+  border-radius: 8px;
+  background: var(--green-soft);
+  color: #1f5f45;
+  font-size: 0.7rem;
+}
+
+.signing-done p {
+  margin: 0;
+  line-height: 1.45;
+}
+
+.signing-done small {
+  color: #3a6e58;
+}
+
+.signed-documents-list {
+  margin-bottom: 14px;
+}
+
+.signed-documents-heading {
+  margin: 0;
+  color: var(--text-soft);
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+@media (max-width: 820px) {
+  .signing-panel {
+    margin: 2px 0 0;
+    padding: 12px;
+  }
+
+  .signing-preview {
+    display: none;
+  }
+
+  /* 16px text keeps phones from zooming into fields. */
+  .signing-panel input[type="text"] {
+    min-height: 44px;
+    font-size: 16px;
+  }
+
+  .signing-check,
+  .signing-status,
+  .signing-document p,
+  .signing-done {
+    font-size: 15px;
+  }
+
+  .signing-check input {
+    width: 22px;
+    height: 22px;
+  }
+
+  .signing-actions > * {
+    flex: 1 1 100%;
+    min-height: 44px;
+  }
+}

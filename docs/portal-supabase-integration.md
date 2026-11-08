@@ -1069,3 +1069,13 @@ The important security rule is:
 Guests should never have broad database access.
 Guests should only see the one portal record connected to their private token.
 ```
+
+---
+
+## 30. Guest Emails (sent by the staff system)
+
+Portal emails (welcome, task notices, deadline reminders) are built and sent by the staff booking software, not by this app. See `docs/portal-email/SETUP.md` in the Toah_Nipi_Booking_Software repository.
+
+* Emails link to this portal with the same private link staff copy from Portal Admin (`/?portal=<token>`). This app needs no change for them.
+* The portal token gives no access to email settings, recipients, templates or sending; those are staff-only on the server.
+* Emails never attach uploaded files. They link to the portal.

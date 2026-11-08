@@ -9,6 +9,11 @@ import {
   markPortalItemReady,
   unmarkPortalItemReady,
 } from "./services/portalService";
+import {
+  SignedCopyDownload,
+  SigningPanel,
+} from "./signing";
+import { formatSignedDate } from "./signingFormat";
 
 /*
   Files placed in the PROJECT ROOT /documents folder are bundled by Vite
@@ -758,6 +763,7 @@ export default function App() {
     });
     const checklistItems = portalRecord?.checklistItems || [];
     const documents = portalRecord?.documents || [];
+    const signedDocuments = portalRecord?.signedDocuments || [];
     useEffect(() => {
         let isMounted = true;
         async function loadPortalRecord() {
@@ -886,6 +892,18 @@ export default function App() {
             setSavingItemId("");
         }
     }
+    // After an online signature: reload so the task shows its new status.
+    async function handleRefresh() {
+        try {
+            const updatedRecord = await fetchPortalRecord(portalToken);
+            if (updatedRecord) {
+                setPortalRecord(updatedRecord);
+            }
+        }
+        catch (error) {
+            console.error("Could not refresh the portal:", error);
+        }
+    }
     async function handleSubmitTextResponse(item, responseText) {
         const cleanedResponse = String(responseText || "").trim();
 
@@ -950,9 +968,9 @@ export default function App() {
     }
     return (<main className="portal-shell">
       <section className="portal-main">
-        <PortalHeader portalRecord={portalRecord} progress={progress} activeTab={activeTab} setActiveTab={setActiveTab} documentCount={documents.length}/>
+        <PortalHeader portalRecord={portalRecord} progress={progress} activeTab={activeTab} setActiveTab={setActiveTab} documentCount={documents.length + signedDocuments.length}/>
         <PortalNotice portalToken={portalToken}/>
-        {activeTab === "checklist" ? (<ChecklistTab portalToken={portalToken} portalRecord={portalRecord} bookingReference={bookingReference} checklistItems={checklistItems} onUpload={handleUpload} onMarkReady={handleMarkReady} onUnmarkReady={handleUnmarkReady} onSubmitTextResponse={handleSubmitTextResponse} savingItemId={savingItemId}/>) : (<DocumentsTab documents={documents} portalToken={portalToken}/>)}
+        {activeTab === "checklist" ? (<ChecklistTab portalToken={portalToken} portalRecord={portalRecord} bookingReference={bookingReference} checklistItems={checklistItems} onUpload={handleUpload} onMarkReady={handleMarkReady} onUnmarkReady={handleUnmarkReady} onSubmitTextResponse={handleSubmitTextResponse} onRefresh={handleRefresh} savingItemId={savingItemId}/>) : (<DocumentsTab documents={documents} signedDocuments={signedDocuments} portalToken={portalToken}/>)}
 
         <FeedbackCard />
       </section>
@@ -1163,7 +1181,7 @@ function PortalNotice({ portalToken }) {
     </section>);
 }
 
-function ChecklistTab({ portalToken, portalRecord, bookingReference, checklistItems, onUpload, onMarkReady, onUnmarkReady, onSubmitTextResponse, savingItemId, }) {
+function ChecklistTab({ portalToken, portalRecord, bookingReference, checklistItems, onUpload, onMarkReady, onUnmarkReady, onSubmitTextResponse, onRefresh, savingItemId, }) {
     return (<section className="dashboard-card notion-checklist-panel">
       <div className="notion-checklist-header">
         <div>
@@ -1199,6 +1217,7 @@ function ChecklistTab({ portalToken, portalRecord, bookingReference, checklistIt
               onMarkReady={onMarkReady}
               onUnmarkReady={onUnmarkReady}
               onSubmitTextResponse={onSubmitTextResponse}
+              onRefresh={onRefresh}
               isSaving={savingItemId === item.id}
             />
           ))}
@@ -1207,7 +1226,7 @@ function ChecklistTab({ portalToken, portalRecord, bookingReference, checklistIt
     </section>);
 }
 
-function ChecklistItemCard({ item, portalToken, portalRecord, bookingReference, onUpload, onMarkReady, onUnmarkReady, onSubmitTextResponse, isSaving }) {
+function ChecklistItemCard({ item, portalToken, portalRecord, bookingReference, onUpload, onMarkReady, onUnmarkReady, onSubmitTextResponse, onRefresh, isSaving }) {
     const statusInfo = getStatusInfo(item.status);
     const inputId = `upload-${item.id}`;
     const isCompleted = item.status === "completed";
@@ -1219,6 +1238,10 @@ function ChecklistItemCard({ item, portalToken, portalRecord, bookingReference, 
     const canUnsubmit = isGuestCount && isInReview;
     const isUploadLocked = isCompleted || isInReview;
     const isUploadBusy = isUploadItem && isSaving;
+    // Online signing: offered only while the task is open and staff linked a PDF to it.
+    const canSignOnline = isUploadItem && Boolean(item.signDocumentId) && !isUploadLocked;
+    const latestSignature = item.signature || null;
+    const [isSigningOpen, setIsSigningOpen] = useState(false);
     const databaseReference = getPortalDatabaseReference(
         portalRecord,
         bookingReference,
@@ -1318,6 +1341,10 @@ function ChecklistItemCard({ item, portalToken, portalRecord, bookingReference, 
                 return "Uploading...";
             }
 
+            if (canSignOnline) {
+                return "Upload Paper Copy";
+            }
+
             return item.id === "contract" ? "Upload Signed File" : "Upload File";
         }
         return "No Action";
@@ -1402,7 +1429,14 @@ function ChecklistItemCard({ item, portalToken, portalRecord, bookingReference, 
                   : "Add Info"}
           </button>
         ) : isUploadItem ? (
-          item.uploadedFileName ? (
+          latestSignature && (isInReview || isCompleted) ? (
+            <div className="notion-upload-file-detail">
+              <span className="has-file" title={latestSignature.documentTitle}>
+                Signed online
+              </span>
+              <small>{formatSignedDate(latestSignature.signedAt)}</small>
+            </div>
+          ) : item.uploadedFileName ? (
             <div className="notion-upload-file-detail">
               <span className="has-file" title={item.uploadedFileName}>
                 {item.uploadedFileName}
@@ -1426,7 +1460,17 @@ function ChecklistItemCard({ item, portalToken, portalRecord, bookingReference, 
           <span>—</span>
         )}
       </div>
-      <div className="notion-action-cell">
+      <div className={`notion-action-cell ${canSignOnline ? "notion-action-cell-stack" : ""}`}>
+        {canSignOnline && (
+          <button
+            className="primary-dashboard-button notion-action-button"
+            type="button"
+            aria-expanded={isSigningOpen}
+            onClick={() => setIsSigningOpen((current) => !current)}
+          >
+            Review &amp; Sign
+          </button>
+        )}
         <input
           id={inputId}
           className="hidden-file-input"
@@ -1453,13 +1497,25 @@ function ChecklistItemCard({ item, portalToken, portalRecord, bookingReference, 
         </button>) : (<label
           className={isUploadLocked || !isUploadItem || isUploadBusy
             ? `secondary-dashboard-button notion-action-button disabled ${isCompleted ? "portal-checklist-action-received" : ""} ${isUploadBusy ? "notion-action-button-uploading" : ""}`
-            : "primary-dashboard-button notion-action-button"}
+            : canSignOnline
+              ? "secondary-dashboard-button notion-action-button"
+              : "primary-dashboard-button notion-action-button"}
           htmlFor={isUploadLocked || !isUploadItem || isUploadBusy ? undefined : inputId}
           aria-busy={isUploadBusy ? "true" : undefined}
         >
           {getActionLabel()}
         </label>)}
       </div>
+
+      {isSigningOpen && (
+        <SigningPanel
+          item={item}
+          portalToken={portalToken}
+          groupName={portalRecord.groupName}
+          onSigned={onRefresh}
+          onClose={() => setIsSigningOpen(false)}
+        />
+      )}
 
       {isTextResponseTask && isDetailsOpen && (
         <div className="notion-response-panel">
@@ -1564,7 +1620,7 @@ function ChecklistItemCard({ item, portalToken, portalRecord, bookingReference, 
     </article>);
 }
 
-function DocumentsTab({ documents, portalToken }) {
+function DocumentsTab({ documents, signedDocuments = [], portalToken }) {
     return (<section className="dashboard-card portal-panel">
       <div className="portal-panel-header">
         <div>
@@ -1576,6 +1632,32 @@ function DocumentsTab({ documents, portalToken }) {
           </span>
         </div>
       </div>
+      {signedDocuments.length > 0 && (
+        <div className="documents-list signed-documents-list">
+          <h3 className="signed-documents-heading">Signed copies</h3>
+          {signedDocuments.map((signed) => (
+            <article className="document-card" key={signed.id}>
+              <div className="document-file-icon" title="PDF">PDF</div>
+              <div className="document-main">
+                <div className="document-title-row">
+                  <div>
+                    <h3>{signed.title}</h3>
+                    <p>Signed online by {signed.signerName}</p>
+                  </div>
+                  <span className="status-pill status-complete">Signed</span>
+                </div>
+                <div className="document-meta-row">
+                  <span>{signed.itemTitle}</span>
+                  <span>Signed: {formatSignedDate(signed.signedAt)}</span>
+                </div>
+              </div>
+              <div className="document-actions">
+                <SignedCopyDownload portalToken={portalToken} signatureId={signed.id} />
+              </div>
+            </article>
+          ))}
+        </div>
+      )}
       <div className="documents-list">
         {documents.length > 0 ? (
           documents.map((document) => (
