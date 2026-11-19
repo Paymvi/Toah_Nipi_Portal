@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 
 import "./App.css";
+import "./theme.css";
 
 import { supabase } from "./lib/supabaseClient";
 
@@ -1001,10 +1002,13 @@ function PortalHeader({ portalRecord, progress, activeTab, setActiveTab, documen
             <h1>{portalRecord.groupName}</h1>
           </div>
         </div>
-        <a className="primary-dashboard-button portal-contact-button" href={`mailto:${portalRecord.staffEmail}`}>
-          <PortalIcon type="mail"/>
-          <span>Contact Staff</span>
-        </a>
+        <div className="portal-header-actions">
+          <ThemeToggle />
+          <a className="primary-dashboard-button portal-contact-button" href={`mailto:${portalRecord.staffEmail}`}>
+            <PortalIcon type="mail"/>
+            <span>Contact Staff</span>
+          </a>
+        </div>
       </div>
       <div className="portal-summary-grid">
         <SummaryCard label="Retreat Dates" value={portalRecord.retreatDates} icon="calendar" tone="purple"/>
@@ -1049,6 +1053,38 @@ function PortalHeader({ portalRecord, progress, activeTab, setActiveTab, documen
         </button>
       </nav>
     </header>);
+}
+
+const THEMES = [
+    { value: "light", label: "Light", icon: "sun" },
+    { value: "night", label: "Night", icon: "moon" },
+];
+
+// index.html reads this same key before first paint.
+function applyAndSaveTheme(theme) {
+    document.documentElement.dataset.theme = theme;
+    try {
+        window.localStorage.setItem("toahNipiTheme", theme);
+    }
+    catch {
+        // Not saved: the theme still applies until this page is closed.
+    }
+}
+
+// Same control as the booking software. index.html has already applied the saved theme.
+function ThemeToggle() {
+    const [theme, setTheme] = useState(document.documentElement.dataset.theme);
+    const chooseTheme = (nextTheme) => {
+        applyAndSaveTheme(nextTheme);
+        setTheme(nextTheme);
+    };
+    return (<fieldset className="theme-toggle" aria-label="Color theme">
+      {THEMES.map(({ value, label, icon }) => (<label key={value} title={`${label} theme`}>
+          <input type="radio" name="color-theme" value={value} checked={theme === value} onChange={() => chooseTheme(value)}/>
+          <PortalIcon type={icon}/>
+          <span>{label}</span>
+        </label>))}
+    </fieldset>);
 }
 
 function SummaryCard({ label, value, icon, tone = "purple" }) {
@@ -1120,6 +1156,17 @@ function PortalIcon({ type }) {
         return (<svg {...commonProps}>
         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/>
         <path d="M14 2v6h6M8 13h8M8 17h6"/>
+      </svg>);
+    }
+    if (type === "sun") {
+        return (<svg {...commonProps}>
+        <circle cx="12" cy="12" r="4"/>
+        <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+      </svg>);
+    }
+    if (type === "moon") {
+        return (<svg {...commonProps}>
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"/>
       </svg>);
     }
     if (type === "feedback") {
